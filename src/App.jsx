@@ -71,9 +71,17 @@ export default function App() {
     setDarkMode
   } = useCanvas();
   
-  const svgRef = useRef(null);
-const { exportSVG, exportPNG, exportPDF } = useExport();
+const svgRef = useRef(null);
+  const { exportSVG, exportPNG, exportPDF } = useExport();
   const { user, profile, addToast: authAddToast } = useAuth();
+  
+  // Debug auth state
+  useEffect(() => {
+    console.log('=== AUTH DEBUG ===')
+    console.log('User:', user)
+    console.log('Profile:', profile)
+    console.log('=================')
+  }, [user, profile])
   
   const {
     recordRequest,

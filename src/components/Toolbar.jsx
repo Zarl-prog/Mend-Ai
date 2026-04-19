@@ -220,39 +220,53 @@ export default function Toolbar({
 
       <div className="w-10 h-px bg-[#222] my-2" />
 
-      {!user ? (
-        <button
-          onClick={onOpenAuth}
-          className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-white rounded-lg hover:bg-[#222]"
-          title="Sign in"
-        >
-          👤
-        </button>
-      ) : (
-        <>
+      <div className="mt-auto flex flex-col items-center gap-2 py-3">
+        {!user ? (
           <button
-            onClick={onOpenSettings}
-            className="w-10 h-10 rounded-full bg-[#6C47FF] text-white flex items-center justify-center text-sm font-semibold hover:brightness-110"
-            title={profile?.display_name || user?.email}
-          >
-            {getInitial()}
-          </button>
-          <button
-            onClick={onOpenSettings}
+            onClick={() => {
+              console.log('Login button clicked, user:', user)
+              onOpenAuth?.()
+            }}
             className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-white rounded-lg hover:bg-[#222]"
-            title="Settings"
+            title="Sign in"
           >
-            ⚙
+            👤
           </button>
-          <button
-            onClick={signOut}
-            className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-[#FC8181] rounded-lg hover:bg-[#222]"
-            title="Sign out"
-          >
-            ⏻
-          </button>
-        </>
-      )}
+        ) : (
+          <>
+            <button
+              onClick={() => {
+                console.log('Avatar clicked, profile:', profile, 'user:', user)
+                onOpenSettings?.()
+              }}
+              className="w-10 h-10 rounded-full bg-[#6C47FF] text-white flex items-center justify-center text-sm font-semibold hover:brightness-110 cursor-pointer"
+              title={profile?.display_name || user?.email}
+            >
+              {getInitial()}
+            </button>
+            <button
+              onClick={() => {
+                console.log('Settings clicked')
+                onOpenSettings?.()
+              }}
+              className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-white rounded-lg hover:bg-[#222]"
+              title="Settings"
+            >
+              ⚙
+            </button>
+            <button
+              onClick={() => {
+                console.log('Sign out clicked')
+                signOut()
+              }}
+              className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-[#FC8181] rounded-lg hover:bg-[#222]"
+              title="Sign out"
+            >
+              ⏻
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
