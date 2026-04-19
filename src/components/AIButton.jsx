@@ -1,7 +1,7 @@
 import React from 'react';
 
 export default function AIButton({ onClick, loading, disabled, cooldownRemaining }) {
-  const isDisabled = disabled || loading;
+  const isDisabled = disabled;
   const cooldownSeconds = Math.ceil(cooldownRemaining / 1000);
   
   return (

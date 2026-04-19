@@ -527,7 +527,7 @@ case 'a':
       />
       
       <AIButton
-        onClick={() => setAiPanelOpen(!state.aiPanelOpen)}
+        onClick={() => { setAiPanelOpen(!state.aiPanelOpen); }}
         loading={state.aiLoading}
         disabled={!canMakeRequest}
         cooldownRemaining={cooldownRemaining}
