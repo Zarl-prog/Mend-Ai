@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 const tools = [
   { id: 'select', icon: '✥', label: 'Select', shortcut: 'V' },
@@ -63,8 +64,15 @@ export default function Toolbar({
   onAlignLeft, onAlignCenter, onAlignRight, onAlignTop, onAlignMiddle, onAlignBottom,
   onDistributeH, onDistributeV, onBringForward, onSendBackward,
   onDuplicate, onCopy, onPaste, onToggleDarkMode, darkMode,
-  hasCopiedShapes, onToggleShortcuts
+  hasCopiedShapes, onToggleShortcuts,
+  onOpenAuth, onOpenSettings
 }) {
+  const { user, profile, signOut } = useAuth()
+  
+  const getInitial = () => {
+    return (profile?.display_name || user?.email?.[0] || 'U').toUpperCase()[0]
+  }
+  
   return (
     <div className="w-14 bg-[#141414] border-r border-[#222] flex flex-col items-center py-3 gap-1">
       {tools.map((t) => (
@@ -209,6 +217,42 @@ export default function Toolbar({
       <ToolButton tool={{ label: 'Keyboard Shortcuts', shortcut: '?' }} isActive={false} onClick={onToggleShortcuts}>
         ?
       </ToolButton>
+
+      <div className="w-10 h-px bg-[#222] my-2" />
+
+      {!user ? (
+        <button
+          onClick={onOpenAuth}
+          className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-white rounded-lg hover:bg-[#222]"
+          title="Sign in"
+        >
+          👤
+        </button>
+      ) : (
+        <>
+          <button
+            onClick={onOpenSettings}
+            className="w-10 h-10 rounded-full bg-[#6C47FF] text-white flex items-center justify-center text-sm font-semibold hover:brightness-110"
+            title={profile?.display_name || user?.email}
+          >
+            {getInitial()}
+          </button>
+          <button
+            onClick={onOpenSettings}
+            className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-white rounded-lg hover:bg-[#222]"
+            title="Settings"
+          >
+            ⚙
+          </button>
+          <button
+            onClick={signOut}
+            className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-[#FC8181] rounded-lg hover:bg-[#222]"
+            title="Sign out"
+          >
+            ⏻
+          </button>
+        </>
+      )}
     </div>
   );
 }

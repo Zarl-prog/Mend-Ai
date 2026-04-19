@@ -10,6 +10,9 @@ import LoadingOverlay from './components/LoadingOverlay';
 import Toast from './components/Toast';
 import Home from './components/Home';
 import ShortcutsModal from './components/ShortcutsModal';
+import AuthModal from './components/AuthModal';
+import SettingsModal from './components/SettingsModal';
+import { useAuth } from './contexts/AuthContext';
 import { useCanvas } from './hooks/useCanvas';
 import { useAIRateLimit } from './hooks/useAIRateLimit';
 import { useExport } from './hooks/useExport';
@@ -69,7 +72,8 @@ export default function App() {
   } = useCanvas();
   
   const svgRef = useRef(null);
-  const { exportSVG, exportPNG, exportPDF } = useExport();
+const { exportSVG, exportPNG, exportPDF } = useExport();
+  const { user, profile, addToast: authAddToast } = useAuth();
   
   const {
     recordRequest,
@@ -85,7 +89,22 @@ export default function App() {
   const [toasts, setToasts] = useState([]);
   const [aiPrompt, setAiPrompt] = useState('');
   const [showHome, setShowHome] = useState(true);
-const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
+
+  const addToast = useCallback((message, type = 'success') => {
+    const id = generateId('toast');
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 2500);
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
   
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -199,18 +218,6 @@ const [showShortcutsModal, setShowShortcutsModal] = useState(false);
     }));
   }, [state.shapes, state.arrows]);
 
-  const addToast = useCallback((message, type = 'success') => {
-    const id = generateId('toast');
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 2500);
-  }, []);
-  
-  const removeToast = useCallback((id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
-  
   const handleUndo = useCallback(() => {
     if (history.past.length === 0) return;
     
@@ -340,21 +347,31 @@ const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showCloudModal, setShowCloudModal] = useState(false);
   
   const handleCloudSave = useCallback(async () => {
+    if (!user) {
+      setAuthMessage('Sign in to save diagrams — it\'s free!')
+      setShowAuthModal(true)
+      return
+    }
     if (state.shapes.length === 0) {
       addToast('Nothing to save', 'warning');
       return;
     }
     try {
-      await saveToSupabase(state.title, state.shapes, state.arrows);
+      await saveToSupabase(state.title, state.shapes, state.arrows, user.id);
       addToast('Saved to cloud!', 'success');
     } catch (error) {
       addToast('Cloud save failed', 'error');
     }
-  }, [state.title, state.shapes, state.arrows, addToast]);
+  }, [state.title, state.shapes, state.arrows, user, addToast]);
   
   const handleCloudLoad = useCallback(async () => {
+    if (!user) {
+      setAuthMessage('Sign in to access your diagrams')
+      setShowAuthModal(true)
+      return
+    }
     try {
-      const diagrams = await listDiagrams();
+      const diagrams = await listDiagrams(user.id);
       setCloudDiagrams(diagrams);
       setShowCloudModal(true);
     } catch (error) {
@@ -697,6 +714,8 @@ case 'a':
           darkMode={state.darkMode}
           hasCopiedShapes={!!state.copiedShapes}
           onToggleShortcuts={() => setShowShortcutsModal(true)}
+          onOpenAuth={() => setShowAuthModal(true)}
+          onOpenSettings={() => setShowSettingsModal(true)}
         />
         
         <Canvas
@@ -787,6 +806,10 @@ case 'a':
       <Toast toasts={toasts} removeToast={removeToast} />
       
       <ShortcutsModal isOpen={showShortcutsModal} onClose={() => setShowShortcutsModal(false)} />
+      
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} message={authMessage} />
+      
+      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </div>
   );
 }

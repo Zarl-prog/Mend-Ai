@@ -31,12 +31,17 @@ export async function loadFromSupabase(id) {
   return data;
 }
 
-export async function listDiagrams(userId = 'anonymous') {
-  const { data, error } = await supabase
+export async function listDiagrams(userId) {
+  let query = supabase
     .from('diagrams')
     .select('id, title, created_at, updated_at')
-    .eq('user_id', userId)
     .order('updated_at', { ascending: false });
+  
+  if (userId) {
+    query = query.eq('user_id', userId)
+  }
+  
+  const { data, error } = await query;
   
   if (error) throw new Error(error.message);
   return data || [];
