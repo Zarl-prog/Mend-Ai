@@ -332,6 +332,7 @@ export default function Shape({
   return (
     <g
       ref={groupRef}
+      data-shape-id={shape.id}
       onMouseDown={handleMouseDown}
       style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
     >

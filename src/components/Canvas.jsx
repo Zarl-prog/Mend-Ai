@@ -28,6 +28,9 @@ const Canvas = forwardRef(function Canvas({
   gridSize = 20
 }, ref) {
   const canvasRef = useRef(null);
+  const glowRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const mousePos = useRef({ x: -999, y: -999 });
   
   React.useImperativeHandle(ref, () => canvasRef.current, []);
   
@@ -120,19 +123,109 @@ const Canvas = forwardRef(function Canvas({
     }
   }, [zoom, panX, panY, onZoom]);
   
-  const handleKeyDown = useCallback((e) => {
+const handleKeyDown = useCallback((e) => {
     if (e.code === 'Space' && !isPanning) {
       setIsPanning(true);
       setStartPan({ x: e.clientX, y: e.clientY });
     }
   }, [isPanning]);
-  
+
   const handleKeyUp = useCallback((e) => {
     if (e.code === 'Space') {
       setIsPanning(false);
     }
-  }, []);
-  
+  });
+
+  useEffect(() => {
+    const container = canvasRef.current;
+    const glowCanvas = glowRef.current;
+    if (!container || !glowCanvas) return;
+    
+    const ctx = glowCanvas.getContext('2d');
+
+    const resize = () => {
+      glowCanvas.width = container.clientWidth;
+      glowCanvas.height = container.clientHeight;
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(container);
+
+    const onMouseMove = (e) => {
+      const rect = container.getBoundingClientRect();
+      mousePos.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    };
+
+    const onMouseLeave = () => {
+      mousePos.current = { x: -999, y: -999 };
+    };
+
+    container.addEventListener('mousemove', onMouseMove);
+    container.addEventListener('mouseleave', onMouseLeave);
+
+    const draw = () => {
+      const { x, y } = mousePos.current;
+      const w = glowCanvas.width;
+      const h = glowCanvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      if (x < 0 || y < 0) {
+        animFrameRef.current = requestAnimationFrame(draw);
+        return;
+      }
+
+      // Check if mouse is over a shape
+      const rect = container.getBoundingClientRect();
+      const target = document.elementFromPoint(x + rect.left, y + rect.top);
+      const isOverShape = target && (target.closest('[data-shape-id]'));
+      
+      if (!isOverShape) {
+        // Background glow - only when NOT over a shape
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 100);
+        gradient.addColorStop(0, 'rgba(255,255,255,0.04)');
+        gradient.addColorStop(0.5, 'rgba(255,255,255,0.015)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+
+        const spacing = 24;
+        const radius = 80;
+
+        const startX = Math.floor((x - radius) / spacing) * spacing;
+        const startY = Math.floor((y - radius) / spacing) * spacing;
+
+        for (let dx = startX; dx <= x + radius; dx += spacing) {
+          for (let dy = startY; dy <= y + radius; dy += spacing) {
+            const dist = Math.sqrt((dx - x) ** 2 + (dy - y) ** 2);
+            if (dist < radius) {
+              const alpha = (1 - dist / radius) * 0.4;
+              const dotR = (1 - dist / radius) * 1.5 + 0.3;
+              ctx.beginPath();
+              ctx.arc(dx, dy, dotR, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      animFrameRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animFrameRef.current);
+      container.removeEventListener('mousemove', onMouseMove);
+      container.removeEventListener('mouseleave', onMouseLeave);
+      ro.disconnect();
+    };
+  }, [shapes, zoom, panX, panY]);
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -280,7 +373,7 @@ const Canvas = forwardRef(function Canvas({
       <svg
         ref={canvasRef}
         className="w-full h-full"
-        style={{ cursor: isPanning ? 'grabbing' : tool === 'arrow' ? 'crosshair' : 'default' }}
+        style={{ position: 'absolute', top: 0, left: 0, cursor: isPanning ? 'grabbing' : tool === 'arrow' ? 'crosshair' : 'default', zIndex: 1 }}
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
@@ -342,6 +435,19 @@ const Canvas = forwardRef(function Canvas({
           )}
         </g>
       </svg>
+      
+      <canvas
+        ref={glowRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          zIndex: 2
+        }}
+      />
       
       <div className="absolute bottom-2 left-2 text-[#888] text-sm">
         {Math.round(zoom * 100)}%
