@@ -220,7 +220,7 @@ const pushHistory = useCallback(() => {
       addToast('Invalid file', 'error');
     }
   }, [loadDiagramState, addToast]);
-  
+
 const handleExportPNG = useCallback(() => {
     if (state.shapes.length === 0) {
       addToast('Nothing to export', 'warning');
@@ -264,7 +264,7 @@ const handleExportPNG = useCallback(() => {
     
 addToast('Template loaded!', 'success');
   }, [pushHistory, clearCanvas, dispatch]);
-  
+
   const handleDuplicate = useCallback((shape) => {
     pushHistory();
     const newShape = {
@@ -416,7 +416,7 @@ case 'a':
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setTool, deleteSelected, deleteArrow, selectAll, deselectAll, cancelConnecting, setAiPanelOpen, state.selectedIds, state.arrows, pushHistory, handleUndo, handleRedo]);
-  
+
   return (
     <div className={`h-screen flex flex-col ${state.darkMode ? 'dark' : ''}`}>
       <TopBar
@@ -527,7 +527,7 @@ case 'a':
       />
       
       <AIButton
-        onClick={() => { setAiPanelOpen(!state.aiPanelOpen); }}
+        onClick={() => setAiPanelOpen(!state.aiPanelOpen)}
         loading={state.aiLoading}
         disabled={!canMakeRequest}
         cooldownRemaining={cooldownRemaining}

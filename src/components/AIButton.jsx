@@ -1,14 +1,22 @@
 import React from 'react';
 
 export default function AIButton({ onClick, loading, disabled, cooldownRemaining }) {
-  const isDisabled = disabled;
+  const isDisabled = disabled || loading;
   const cooldownSeconds = Math.ceil(cooldownRemaining / 1000);
+  
+  const handleClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onClick) {
+      onClick();
+    }
+  };
   
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       disabled={isDisabled}
-      className={`fixed bottom-4 right-4 w-14 h-14 rounded-full text-white text-2xl flex items-center justify-center shadow-lg z-40 ${
+      className={`fixed bottom-4 right-4 w-14 h-14 rounded-full text-white text-2xl flex items-center justify-center shadow-lg ${isDisabled ? 'z-40' : 'z-[9999]' } ${
         isDisabled 
           ? 'bg-gray-500 cursor-not-allowed' 
           : 'bg-gradient-to-br from-[#6C47FF] to-[#1D9E75] hover:scale-110 transition-transform'
