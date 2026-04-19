@@ -9,6 +9,15 @@ const tools = [
   { id: 'arrow', icon: '⟶', label: 'Arrow', shortcut: 'A' },
 ];
 
+const shapeTypes = [
+  { id: 'rect', label: 'Rectangle' },
+  { id: 'circle', label: 'Circle' },
+  { id: 'diamond', label: 'Diamond' },
+  { id: 'hexagon', label: 'Hexagon' },
+  { id: 'cloud', label: 'Cloud' },
+  { id: 'cylinder', label: 'Cylinder' },
+];
+
 function ToolButton({ tool, isActive, onClick, disabled, children }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const timeoutRef = useRef(null);
@@ -48,7 +57,14 @@ function ToolButton({ tool, isActive, onClick, disabled, children }) {
   );
 }
 
-export default function Toolbar({ tool, setTool, canUndo, canRedo, onUndo, onRedo, onDelete, onSelectAll, selectedCount, snapToGrid, onToggleSnap }) {
+export default function Toolbar({ 
+  tool, setTool, canUndo, canRedo, onUndo, onRedo, 
+  onDelete, onSelectAll, selectedCount, snapToGrid, onToggleSnap,
+  onAlignLeft, onAlignCenter, onAlignRight, onAlignTop, onAlignMiddle, onAlignBottom,
+  onDistributeH, onDistributeV, onBringForward, onSendBackward,
+  onDuplicate, onCopy, onPaste, onToggleDarkMode, darkMode,
+  hasCopiedShapes, onToggleShortcuts
+}) {
   return (
     <div className="w-14 bg-[#141414] border-r border-[#222] flex flex-col items-center py-3 gap-1">
       {tools.map((t) => (
@@ -83,6 +99,118 @@ export default function Toolbar({ tool, setTool, canUndo, canRedo, onUndo, onRed
       <ToolButton tool={{ label: 'Select All', shortcut: 'Ctrl+A' }} isActive={false} onClick={onSelectAll}>
         🔲
       </ToolButton>
+
+      <div className="w-10 h-px bg-[#222] my-2" />
+
+      <ToolButton tool={{ label: 'Copy', shortcut: 'Ctrl+C' }} isActive={selectedCount > 0} onClick={onCopy}>
+        ⧉
+      </ToolButton>
+      <ToolButton tool={{ label: 'Paste', shortcut: 'Ctrl+V' }} isActive={!!hasCopiedShapes} onClick={onPaste}>
+        ⎘
+      </ToolButton>
+      <ToolButton tool={{ label: 'Duplicate', shortcut: 'Ctrl+D' }} isActive={selectedCount > 0} onClick={onDuplicate}>
+        ⊕
+      </ToolButton>
+
+      <div className="w-10 h-px bg-[#222] my-2" />
+
+      <button
+        onClick={onAlignLeft}
+        disabled={selectedCount < 2}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Align Left"
+      >
+        ⬌
+      </button>
+      <button
+        onClick={onAlignCenter}
+        disabled={selectedCount < 2}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Align Center"
+      >
+        ⊘
+      </button>
+      <button
+        onClick={onAlignRight}
+        disabled={selectedCount < 2}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Align Right"
+      >
+        ⇥
+      </button>
+
+      <div className="w-10 h-px bg-[#222] my-1" />
+
+      <button
+        onClick={onAlignTop}
+        disabled={selectedCount < 2}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Align Top"
+      >
+        ⬍
+      </button>
+      <button
+        onClick={onAlignMiddle}
+        disabled={selectedCount < 2}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Align Middle"
+      >
+        ⦿
+      </button>
+      <button
+        onClick={onAlignBottom}
+        disabled={selectedCount < 2}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Align Bottom"
+      >
+        ⬎
+      </button>
+
+      <div className="w-10 h-px bg-[#222] my-2" />
+
+      <button
+        onClick={onBringForward}
+        disabled={selectedCount === 0}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount > 0 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Bring to Front"
+      >
+        ⇧
+      </button>
+      <button
+        onClick={onSendBackward}
+        disabled={selectedCount === 0}
+        className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
+          selectedCount > 0 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+        }`}
+        title="Send to Back"
+      >
+        ⇩
+      </button>
+
+      <div className="w-10 h-px bg-[#222] my-2" />
+
+      <ToolButton tool={{ label: 'Dark Mode', shortcut: '' }} isActive={darkMode} onClick={onToggleDarkMode}>
+        {darkMode ? '🌙' : '☀'}
+      </ToolButton>
+      <ToolButton tool={{ label: 'Keyboard Shortcuts', shortcut: '?' }} isActive={false} onClick={onToggleShortcuts}>
+        ?
+      </ToolButton>
     </div>
   );
 }
+
+export { shapeTypes };

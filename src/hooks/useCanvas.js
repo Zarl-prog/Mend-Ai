@@ -18,7 +18,8 @@ const initialState = {
   title: 'Untitled Diagram',
   darkMode: true,
   snapToGrid: true,
-  gridSize: 20
+  gridSize: 20,
+  copiedShapes: null
 };
 
 function canvasReducer(state, action) {
@@ -137,6 +138,152 @@ function canvasReducer(state, action) {
     
     case 'MULTI_SELECT':
       return { ...state, selectedIds: action.payload };
+    
+    case 'ALIGN_SHAPES': {
+      const { alignment, ids } = action.payload;
+      const selectedShapes = state.shapes.filter(s => ids.includes(s.id));
+      if (selectedShapes.length < 2) return state;
+      
+      let referenceX, referenceY;
+      if (alignment.includes('left')) {
+        referenceX = Math.min(...selectedShapes.map(s => s.x));
+      } else if (alignment.includes('center')) {
+        referenceX = Math.min(...selectedShapes.map(s => s.x + s.width / 2));
+      } else if (alignment.includes('right')) {
+        referenceX = Math.max(...selectedShapes.map(s => s.x + s.width));
+      } else if (alignment.includes('top')) {
+        referenceY = Math.min(...selectedShapes.map(s => s.y));
+      } else if (alignment.includes('middle')) {
+        referenceY = Math.min(...selectedShapes.map(s => s.y + s.height / 2));
+      } else if (alignment.includes('bottom')) {
+        referenceY = Math.max(...selectedShapes.map(s => s.y + s.height));
+      }
+      
+      return {
+        ...state,
+        shapes: state.shapes.map(s => {
+          if (!ids.includes(s.id)) return s;
+          let newX = s.x, newY = s.y;
+          if (alignment === 'left') newX = referenceX;
+          else if (alignment === 'center') newX = referenceX - s.width / 2;
+          else if (alignment === 'right') newX = referenceX - s.width;
+          else if (alignment === 'top') newY = referenceY;
+          else if (alignment === 'middle') newY = referenceY - s.height / 2;
+          else if (alignment === 'bottom') newY = referenceY - s.height;
+          return { ...s, x: newX, y: newY };
+        })
+      };
+    }
+    
+    case 'DISTRIBUTE_SHAPES': {
+      const { direction, ids } = action.payload;
+      const selectedShapes = state.shapes.filter(s => ids.includes(s.id)).sort((a, b) => 
+        direction === 'horizontal' ? a.x - b.x : a.y - b.y
+      );
+      if (selectedShapes.length < 3) return state;
+      
+      const gap = direction === 'horizontal' ? 60 : 80;
+      const first = selectedShapes[0];
+      const last = selectedShapes[selectedShapes.length - 1];
+      
+      const totalSpace = direction === 'horizontal' 
+        ? last.x + last.width - first.x 
+        : last.y + last.height - first.y;
+      const totalShapes = direction === 'horizontal'
+        ? selectedShapes.reduce((sum, s) => sum + s.width, 0)
+        : selectedShapes.reduce((sum, s) => sum + s.height, 0);
+      const spacing = (totalSpace - totalShapes) / (selectedShapes.length - 1);
+      
+      return {
+        ...state,
+        shapes: state.shapes.map(s => {
+          if (!ids.includes(s.id)) return s;
+          const idx = selectedShapes.findIndex(sh => sh.id === s.id);
+          if (idx <= 0 || idx >= selectedShapes.length - 1) return s;
+          let newX = s.x, newY = s.y;
+          if (direction === 'horizontal') {
+            newX = first.x + idx * spacing + idx * first.width - (first.x - first.x);
+          } else {
+            newY = first.y + idx * spacing + idx * first.height - (first.y - first.y);
+          }
+          return { ...s, x: newX, y: newY };
+        })
+      };
+    }
+    
+    case 'BRING_FORWARD': {
+      const { ids } = action.payload;
+      return {
+        ...state,
+        shapes: [...state.shapes].sort((a, b) => {
+          if (ids.includes(a.id) && !ids.includes(b.id)) return 1;
+          if (!ids.includes(a.id) && ids.includes(b.id)) return -1;
+          return 0;
+        })
+      };
+    }
+    
+    case 'SEND_BACKWARD': {
+      const { ids } = action.payload;
+      return {
+        ...state,
+        shapes: [...state.shapes].sort((a, b) => {
+          if (ids.includes(a.id) && !ids.includes(b.id)) return -1;
+          if (!ids.includes(a.id) && ids.includes(b.id)) return 1;
+          return 0;
+        })
+      };
+    }
+    
+    case 'DUPLICATE_SHAPES': {
+      const { ids, offsetX = 20, offsetY = 20 } = action.payload;
+      const selectedShapes = state.shapes.filter(s => ids.includes(s.id));
+      const selectedArrows = state.arrows.filter(a => ids.includes(a.fromShapeId) || ids.includes(a.toShapeId));
+      const idMap = {};
+      
+      const newShapes = selectedShapes.map(s => {
+        const newId = generateId('shape');
+        idMap[s.id] = newId;
+        return {
+          ...s,
+          id: newId,
+          x: s.x + offsetX,
+          y: s.y + offsetY,
+          isSelected: false
+        };
+      });
+      
+      const newArrows = selectedArrows.map(a => ({
+        ...a,
+        id: generateId('arrow'),
+        fromShapeId: idMap[a.fromShapeId] || a.fromShapeId,
+        toShapeId: idMap[a.toShapeId] || a.toShapeId,
+        isSelected: false
+      })).filter(a => idMap[a.fromShapeId] && idMap[a.toShapeId]);
+      
+      return {
+        ...state,
+        shapes: [...state.shapes, ...newShapes],
+        arrows: [...state.arrows, ...newArrows],
+        selectedIds: newShapes.map(s => s.id)
+      };
+    }
+    
+    case 'COPY_SHAPES': {
+      return { ...state, copiedShapes: action.payload };
+    }
+    
+    case 'PASTE_SHAPES': {
+      return {
+        ...state,
+        shapes: [...state.shapes, ...action.payload.shapes],
+        arrows: [...state.arrows, ...action.payload.arrows],
+        selectedIds: action.payload.shapes.map(s => s.id)
+      };
+    }
+    
+    case 'SET_DARK_MODE':
+      return { ...state, darkMode: action.payload };
     
     default:
       return state;
@@ -306,6 +453,63 @@ export function useCanvas() {
     return Math.round(value / gridSize) * gridSize;
   }, []);
   
+  const alignShapes = useCallback((alignment) => {
+    if (state.selectedIds.length < 2) return;
+    dispatch({ type: 'ALIGN_SHAPES', payload: { alignment, ids: state.selectedIds } });
+  }, [state.selectedIds]);
+  
+  const distributeShapes = useCallback((direction) => {
+    if (state.selectedIds.length < 3) return;
+    dispatch({ type: 'DISTRIBUTE_SHAPES', payload: { direction, ids: state.selectedIds } });
+  }, [state.selectedIds]);
+  
+  const bringForward = useCallback(() => {
+    if (state.selectedIds.length === 0) return;
+    dispatch({ type: 'BRING_FORWARD', payload: { ids: state.selectedIds } });
+  }, [state.selectedIds]);
+  
+  const sendBackward = useCallback(() => {
+    if (state.selectedIds.length === 0) return;
+    dispatch({ type: 'SEND_BACKWARD', payload: { ids: state.selectedIds } });
+  }, [state.selectedIds]);
+  
+  const duplicateSelected = useCallback(() => {
+    if (state.selectedIds.length === 0) return;
+    dispatch({ type: 'DUPLICATE_SHAPES', payload: { ids: state.selectedIds } });
+  }, [state.selectedIds]);
+  
+  const copySelected = useCallback(() => {
+    const shapes = state.shapes.filter(s => state.selectedIds.includes(s.id));
+    const arrows = state.arrows.filter(a => 
+      state.selectedIds.includes(a.fromShapeId) && state.selectedIds.includes(a.toShapeId)
+    );
+    if (shapes.length > 0) {
+      dispatch({ type: 'COPY_SHAPES', payload: { shapes, arrows } });
+    }
+  }, [state.selectedIds, state.shapes, state.arrows]);
+  
+  const pasteCopied = useCallback(() => {
+    if (!state.copiedShapes) return;
+    const idMap = {};
+    const newShapes = state.copiedShapes.shapes.map(s => {
+      const newId = generateId('shape');
+      idMap[s.id] = newId;
+      return { ...s, id: newId, x: s.x + 20, y: s.y + 20, isSelected: false };
+    });
+    const newArrows = state.copiedShapes.arrows.map(a => ({
+      ...a,
+      id: generateId('arrow'),
+      fromShapeId: idMap[a.fromShapeId] || a.fromShapeId,
+      toShapeId: idMap[a.toShapeId] || a.toShapeId,
+      isSelected: false
+    })).filter(a => idMap[a.fromShapeId] && idMap[a.toShapeId]);
+    dispatch({ type: 'PASTE_SHAPES', payload: { shapes: newShapes, arrows: newArrows } });
+  }, [state.copiedShapes]);
+  
+  const setDarkMode = useCallback((mode) => {
+    dispatch({ type: 'SET_DARK_MODE', payload: mode });
+  }, []);
+  
   return {
     state,
     dispatch,
@@ -336,6 +540,14 @@ export function useCanvas() {
     multiSelect,
     toggleSnapToGrid,
     setGridSize,
-    snapToGrid
+    snapToGrid,
+    alignShapes,
+    distributeShapes,
+    bringForward,
+    sendBackward,
+    duplicateSelected,
+    copySelected,
+    pasteCopied,
+    setDarkMode
   };
 }

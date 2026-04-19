@@ -85,5 +85,53 @@ export function useExport() {
     }
   }, []);
 
-  return { exportSVG, exportPNG };
+  const exportPDF = useCallback((svgElement, title) => {
+    try {
+      const svg = svgElement;
+      if (!svg || svg.tagName !== 'svg') {
+        console.error('Invalid SVG element');
+        return false;
+      }
+      
+      const clonedSvg = svg.cloneNode(true);
+      clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      clonedSvg.style.backgroundColor = '#111111';
+      
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(clonedSvg);
+      const encoded = btoa(unescape(encodeURIComponent(svgString)));
+      const dataUrl = 'data:image/svg+xml;base64,' + encoded;
+      
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        console.error('Could not open print window');
+        return false;
+      }
+      
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${title || 'diagram'}</title>
+          <style>
+            @page { margin: 0; }
+            body { margin: 0; padding: 0; }
+            svg { width: 100%; height: 100%; }
+          </style>
+        </head>
+        <body>
+          <img src="${dataUrl}" style="width:100%;height:100%;object-fit:contain;" onload="window.print();window.close();" />
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      
+      return true;
+    } catch (error) {
+      console.error('Export PDF error:', error);
+      return false;
+    }
+  }, []);
+
+  return { exportSVG, exportPNG, exportPDF };
 }

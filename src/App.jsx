@@ -9,6 +9,7 @@ import AIChatButton from './components/AIChatButton';
 import LoadingOverlay from './components/LoadingOverlay';
 import Toast from './components/Toast';
 import Home from './components/Home';
+import ShortcutsModal from './components/ShortcutsModal';
 import { useCanvas } from './hooks/useCanvas';
 import { useAIRateLimit } from './hooks/useAIRateLimit';
 import { useExport } from './hooks/useExport';
@@ -56,11 +57,19 @@ export default function App() {
     clearCanvas,
     multiSelect,
     toggleSnapToGrid,
-    snapToGrid
+    snapToGrid,
+    alignShapes,
+    distributeShapes,
+    bringForward,
+    sendBackward,
+    duplicateSelected,
+    copySelected,
+    pasteCopied,
+    setDarkMode
   } = useCanvas();
   
   const svgRef = useRef(null);
-  const { exportSVG, exportPNG } = useExport();
+  const { exportSVG, exportPNG, exportPDF } = useExport();
   
   const {
     recordRequest,
@@ -76,8 +85,114 @@ export default function App() {
   const [toasts, setToasts] = useState([]);
   const [aiPrompt, setAiPrompt] = useState('');
   const [showHome, setShowHome] = useState(true);
+const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   
-const pushHistory = useCallback(() => {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      const key = e.key.toLowerCase();
+      const ctrl = e.ctrlKey || e.metaKey;
+      
+      if (key === '?' || (ctrl && key === '/')) {
+        e.preventDefault();
+        setShowShortcutsModal(prev => !prev);
+        return;
+      }
+      
+      if (showShortcutsModal) {
+        if (key === 'escape') {
+          e.preventDefault();
+          setShowShortcutsModal(false);
+        }
+        return;
+      }
+      
+      if (ctrl && key === 'c') {
+        e.preventDefault();
+        copySelected();
+        return;
+      }
+      if (ctrl && key === 'v') {
+        e.preventDefault();
+        pasteCopied();
+        return;
+      }
+      if (ctrl && key === 'd') {
+        e.preventDefault();
+        pushHistory();
+        duplicateSelected();
+        return;
+      }
+      if (ctrl && key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+        return;
+      }
+      if (ctrl && key === 'y') {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+      if (ctrl && key === 'a') {
+        e.preventDefault();
+        selectAll();
+        return;
+      }
+      if (key === 'delete' || key === 'backspace') {
+        if (state.selectedIds.length > 0) {
+          e.preventDefault();
+          pushHistory();
+          deleteSelected();
+        }
+        return;
+      }
+      if (key === 'v') {
+        e.preventDefault();
+        setTool('select');
+        return;
+      }
+      if (key === 'r') {
+        e.preventDefault();
+        setTool('rect');
+        return;
+      }
+      if (key === 'c') {
+        e.preventDefault();
+        setTool('circle');
+        return;
+      }
+      if (key === 't') {
+        e.preventDefault();
+        setTool('text');
+        return;
+      }
+      if (key === 's' && !ctrl) {
+        e.preventDefault();
+        setTool('sticky');
+        return;
+      }
+      if (key === 'a' && !ctrl) {
+        e.preventDefault();
+        setTool('arrow');
+        return;
+      }
+      if (key === '#') {
+        e.preventDefault();
+        toggleSnapToGrid();
+        return;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showShortcutsModal, state.selectedIds.length]);
+  
+  const pushHistory = useCallback(() => {
     setHistory(prev => ({
       past: [...prev.past.slice(-49), { shapes: state.shapes, arrows: state.arrows }],
       future: []
@@ -302,6 +417,15 @@ const handleExportPNG = useCallback(() => {
     const success = exportSVG(svgRef.current, state.title);
     if (success) addToast('Exported as SVG', 'success');
   }, [state.shapes, state.title, exportSVG, addToast]);
+
+  const handleExportPDF = useCallback(() => {
+    if (state.shapes.length === 0) {
+      addToast('Nothing to export', 'warning');
+      return;
+    }
+    const success = exportPDF(svgRef.current, state.title);
+    if (success) addToast('Opening PDF for print...', 'success');
+  }, [state.shapes, state.title, exportPDF, addToast]);
   
   const handleNew = useCallback(() => {
     if (state.shapes.length > 0 && !confirm('Clear the canvas?')) return;
@@ -502,7 +626,8 @@ case 'a':
         onCloudLoad={handleCloudLoad}
         onExportPNG={handleExportPNG}
         onExportSVG={handleExportSVG}
-        onToggleTheme={toggleDarkMode}
+        onExportPDF={handleExportPDF}
+        onToggleTheme={() => setDarkMode(!state.darkMode)}
         darkMode={state.darkMode}
         onOpenTemplates={handleOpenTemplate}
         onGoHome={() => setShowHome(true)}
@@ -557,6 +682,21 @@ case 'a':
           selectedCount={state.selectedIds.length}
           snapToGrid={state.snapToGrid}
           onToggleSnap={toggleSnapToGrid}
+          onAlignLeft={() => { pushHistory(); alignShapes('left'); }}
+          onAlignCenter={() => { pushHistory(); alignShapes('center'); }}
+          onAlignRight={() => { pushHistory(); alignShapes('right'); }}
+          onAlignTop={() => { pushHistory(); alignShapes('top'); }}
+          onAlignMiddle={() => { pushHistory(); alignShapes('middle'); }}
+          onAlignBottom={() => { pushHistory(); alignShapes('bottom'); }}
+          onBringForward={bringForward}
+          onSendBackward={sendBackward}
+          onDuplicate={() => { pushHistory(); duplicateSelected(); }}
+          onCopy={copySelected}
+          onPaste={pasteCopied}
+          onToggleDarkMode={() => setDarkMode(!state.darkMode)}
+          darkMode={state.darkMode}
+          hasCopiedShapes={!!state.copiedShapes}
+          onToggleShortcuts={() => setShowShortcutsModal(true)}
         />
         
         <Canvas
@@ -645,6 +785,8 @@ case 'a':
       />
       
       <Toast toasts={toasts} removeToast={removeToast} />
+      
+      <ShortcutsModal isOpen={showShortcutsModal} onClose={() => setShowShortcutsModal(false)} />
     </div>
   );
 }

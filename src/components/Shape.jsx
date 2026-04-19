@@ -257,6 +257,115 @@ export default function Shape({
           </g>
         );
       
+      case 'diamond':
+        return (
+          <g>
+            <defs>
+              <filter id={`glass-glow-${shape.id}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+                <feFlood floodColor="#8C64FF" floodOpacity="0.3" result="color"/>
+                <feComposite in="color" in2="blur" operator="in" result="glow"/>
+                <feMerge>
+                  <feMergeNode in="glow"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <polygon
+              points={`${x + width / 2},${y} ${x + width},${y + height / 2} ${x + width / 2},${y + height} ${x},${y + height / 2}`}
+              fill={glassFill}
+              stroke={glassStroke}
+              strokeWidth={strokeWidth || 1}
+              opacity={opacity || 1}
+              filter={`url(#glass-glow-${shape.id})`}
+            />
+            <text x={textPos.x} y={textPos.y} style={textStyle}>
+              {label}
+            </text>
+          </g>
+        );
+      
+      case 'hexagon':
+        return (
+          <g>
+            <defs>
+              <filter id={`glass-glow-${shape.id}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+                <feFlood floodColor="#8C64FF" floodOpacity="0.3" result="color"/>
+                <feComposite in="color" in2="blur" operator="in" result="glow"/>
+                <feMerge>
+                  <feMergeNode in="glow"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <polygon
+              points={`${x + width * 0.25},${y} ${x + width * 0.75},${y} ${x + width},${y + height / 2} ${x + width * 0.75},${y + height} ${x + width * 0.25},${y + height} ${x},${y + height / 2}`}
+              fill={glassFill}
+              stroke={glassStroke}
+              strokeWidth={strokeWidth || 1}
+              opacity={opacity || 1}
+              filter={`url(#glass-glow-${shape.id})`}
+            />
+            <text x={textPos.x} y={textPos.y} style={textStyle}>
+              {label}
+            </text>
+          </g>
+        );
+      
+      case 'cloud':
+        return (
+          <g>
+            <defs>
+              <filter id={`glass-glow-${shape.id}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+                <feFlood floodColor="#8C64FF" floodOpacity="0.3" result="color"/>
+                <feComposite in="color" in2="blur" operator="in" result="glow"/>
+                <feMerge>
+                  <feMergeNode in="glow"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <ellipse cx={x + width * 0.3} cy={y + height * 0.4} rx={width * 0.25} ry={height * 0.35} fill={glassFill} stroke={glassStroke} strokeWidth={strokeWidth || 1} opacity={opacity || 1} filter={`url(#glass-glow-${shape.id})`}/>
+            <ellipse cx={x + width * 0.7} cy={y + height * 0.4} rx={width * 0.25} ry={height * 0.35} fill={glassFill} stroke={glassStroke} strokeWidth={strokeWidth || 1} opacity={opacity || 1} filter={`url(#glass-glow-${shape.id})`}/>
+            <ellipse cx={x + width * 0.5} cy={y + height * 0.35} rx={width * 0.3} ry={height * 0.4} fill={glassFill} stroke={glassStroke} strokeWidth={strokeWidth || 1} opacity={opacity || 1} filter={`url(#glass-glow-${shape.id})`}/>
+            <text x={textPos.x} y={textPos.y} style={textStyle}>
+              {label}
+            </text>
+          </g>
+        );
+      
+      case 'cylinder':
+        return (
+          <g>
+            <defs>
+              <filter id={`glass-glow-${shape.id}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+                <feFlood floodColor="#8C64FF" floodOpacity="0.3" result="color"/>
+                <feComposite in="color" in2="blur" operator="in" result="glow"/>
+                <feMerge>
+                  <feMergeNode in="glow"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <ellipse id={`cyl-top-${shape.id}`} cx={x + width / 2} cy={y + 10} rx={width / 2} ry={10}/>
+            </defs>
+            <path
+              d={`M${x},${y + 10} L${x},${y + height - 10} Q${x},${y + height} ${x + width / 2},${y + height} Q${x + width},${y + height} ${x + width},${y + height - 10} L${x + width},${y + 10} Q${x + width},${y} ${x + width / 2},${y} Q${x},${y} ${x},${y + 10}`}
+              fill={glassFill}
+              stroke={glassStroke}
+              strokeWidth={strokeWidth || 1}
+              opacity={opacity || 1}
+              filter={`url(#glass-glow-${shape.id})`}
+            />
+            <ellipse cx={x + width / 2} cy={y + 10} rx={width / 2} ry={10} fill={glassFill} stroke={glassStroke} strokeWidth={strokeWidth || 1} opacity={opacity || 1}/>
+            <text x={textPos.x} y={textPos.y + height * 0.15} style={textStyle}>
+              {label}
+            </text>
+          </g>
+        );
+      
       default:
         return null;
     }

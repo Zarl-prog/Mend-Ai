@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, onCloudSave, onCloudLoad, onExportPNG, onExportSVG, onToggleTheme, darkMode, onOpenTemplates, templateList, onGoHome }) {
+export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, onCloudSave, onCloudLoad, onExportPNG, onExportSVG, onExportPDF, onToggleTheme, darkMode, onOpenTemplates, templateList, onGoHome }) {
   const fileInputRef = React.useRef(null);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -139,7 +139,13 @@ export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, on
           onClick={onExportSVG}
           className="px-3 py-1.5 text-sm text-[#888] hover:text-white hover:bg-[#222] rounded transition-colors"
         >
-          Export SVG
+          SVG
+        </button>
+        <button
+          onClick={onExportPDF}
+          className="px-3 py-1.5 text-sm text-[#888] hover:text-white hover:bg-[#222] rounded transition-colors"
+        >
+          PDF
         </button>
         
         <button
