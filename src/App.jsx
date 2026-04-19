@@ -4,16 +4,18 @@ import Toolbar from './components/Toolbar';
 import TopBar from './components/TopBar';
 import PropertiesPanel from './components/PropertiesPanel';
 import TextEditor from './components/TextEditor';
-import AIPanel from './components/AIPanel';
-import AIButton from './components/AIButton';
+import AIChatPanel from './components/AIChatPanel';
+import AIChatButton from './components/AIChatButton';
 import LoadingOverlay from './components/LoadingOverlay';
 import Toast from './components/Toast';
+import Home from './components/Home';
 import { useCanvas } from './hooks/useCanvas';
 import { useAIRateLimit } from './hooks/useAIRateLimit';
 import { useExport } from './hooks/useExport';
 import { saveDiagram, loadDiagram } from './utils/saveLoad';
 import { parseAIResponse, getAutoFitBounds } from './utils/aiShapeParser';
 import { generateDiagram, improveDiagram } from './services/groqService';
+import { saveToSupabase, loadFromSupabase, listDiagrams, deleteFromSupabase } from './services/database';
 import { generateId } from './utils/uid';
 import { templates, getTemplateList } from './utils/templates';
 
@@ -73,6 +75,7 @@ export default function App() {
   const [history, setHistory] = useState({ past: [], future: [] });
   const [toasts, setToasts] = useState([]);
   const [aiPrompt, setAiPrompt] = useState('');
+  const [showHome, setShowHome] = useState(true);
   
 const pushHistory = useCallback(() => {
     setHistory(prev => ({
@@ -125,6 +128,7 @@ const pushHistory = useCallback(() => {
     startCooldown();
     setAiLoading(true);
     pushHistory();
+    clearCanvas();
     
     try {
       const response = await generateDiagram(prompt);
@@ -154,7 +158,7 @@ const pushHistory = useCallback(() => {
     } finally {
       setAiLoading(false);
     }
-  }, [canMakeRequest, recordRequest, startCooldown, addAiElements, addToast, pushHistory, setAiLoading, setAiPanelOpen, setTool, setZoom, setPan]);
+  }, [canMakeRequest, recordRequest, startCooldown, addAiElements, addToast, pushHistory, setAiLoading, setAiPanelOpen, setTool, setZoom, setPan, clearCanvas]);
   
   const handleImprove = useCallback(async (prompt) => {
     if (!prompt.trim() || state.selectedIds.length === 0) return;
@@ -173,26 +177,22 @@ const pushHistory = useCallback(() => {
       
       const shapeJSON = JSON.stringify({ shapes: selectedShapes, arrows: selectedArrows });
       const response = await improveDiagram(prompt, shapeJSON);
-      const { shapes: newShapes, arrows: newArrows } = parseAIResponse(response, 0, 0);
+      const { shapes: newShapes, arrows: newArrows } = parseAIResponse(response, 0, 0, true);
       
       const allShapes = [...state.shapes];
-      const allArrows = [...state.arrows];
       
       newShapes.forEach(newShape => {
-        const existingIndex = allShapes.findIndex(s => s.id === newShape.id);
-        if (existingIndex >= 0) {
-          allShapes[existingIndex] = newShape;
-        } else {
-          allShapes.push(newShape);
+        const idx = allShapes.findIndex(s => s.id === newShape.id);
+        if (idx >= 0) {
+          allShapes[idx] = { ...newShape, x: allShapes[idx].x, y: allShapes[idx].y };
         }
       });
       
+      const allArrows = [...state.arrows];
       newArrows.forEach(newArrow => {
         const existingIndex = allArrows.findIndex(a => a.id === newArrow.id);
         if (existingIndex >= 0) {
           allArrows[existingIndex] = newArrow;
-        } else {
-          allArrows.push(newArrow);
         }
       });
       
@@ -218,6 +218,70 @@ const pushHistory = useCallback(() => {
       addToast('Diagram loaded', 'success');
     } catch (error) {
       addToast('Invalid file', 'error');
+    }
+  }, [loadDiagramState, addToast]);
+
+  const [cloudDiagrams, setCloudDiagrams] = useState([]);
+  const [showCloudModal, setShowCloudModal] = useState(false);
+  
+  const handleCloudSave = useCallback(async () => {
+    if (state.shapes.length === 0) {
+      addToast('Nothing to save', 'warning');
+      return;
+    }
+    try {
+      await saveToSupabase(state.title, state.shapes, state.arrows);
+      addToast('Saved to cloud!', 'success');
+    } catch (error) {
+      addToast('Cloud save failed', 'error');
+    }
+  }, [state.title, state.shapes, state.arrows, addToast]);
+  
+  const handleCloudLoad = useCallback(async () => {
+    try {
+      const diagrams = await listDiagrams();
+      setCloudDiagrams(diagrams);
+      setShowCloudModal(true);
+    } catch (error) {
+      addToast('Failed to load diagrams', 'error');
+    }
+  }, [addToast]);
+  
+  const handleLoadFromCloud = useCallback(async (id) => {
+    try {
+      const data = await loadFromSupabase(id);
+      loadDiagramState({
+        title: data.title,
+        shapes: data.shapes,
+        arrows: data.arrows
+      });
+      setShowCloudModal(false);
+      setShowHome(false);
+      addToast('Loaded from cloud!', 'success');
+    } catch (error) {
+      addToast('Failed to load', 'error');
+    }
+  }, [loadDiagramState, addToast]);
+
+  const handleNewProject = useCallback(() => {
+    clearCanvas();
+    setShowHome(false);
+    setTitle('Untitled Diagram');
+    setHistory({ past: [], future: [] });
+  }, [clearCanvas, setTitle]);
+
+  const handleHomeLoadProject = useCallback(async (id) => {
+    try {
+      const data = await loadFromSupabase(id);
+      loadDiagramState({
+        title: data.title,
+        shapes: data.shapes,
+        arrows: data.arrows
+      });
+      setShowHome(false);
+      addToast('Project loaded!', 'success');
+    } catch (error) {
+      addToast('Failed to load project', 'error');
     }
   }, [loadDiagramState, addToast]);
 
@@ -417,6 +481,15 @@ case 'a':
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setTool, deleteSelected, deleteArrow, selectAll, deselectAll, cancelConnecting, setAiPanelOpen, state.selectedIds, state.arrows, pushHistory, handleUndo, handleRedo]);
 
+  if (showHome) {
+    return (
+      <Home 
+        onNewProject={handleNewProject}
+        onLoadProject={handleHomeLoadProject}
+      />
+    );
+  }
+
   return (
     <div className={`h-screen flex flex-col ${state.darkMode ? 'dark' : ''}`}>
       <TopBar
@@ -425,13 +498,48 @@ case 'a':
         onNew={handleNew}
         onSave={handleSave}
         onLoad={handleLoad}
+        onCloudSave={handleCloudSave}
+        onCloudLoad={handleCloudLoad}
         onExportPNG={handleExportPNG}
         onExportSVG={handleExportSVG}
         onToggleTheme={toggleDarkMode}
         darkMode={state.darkMode}
         onOpenTemplates={handleOpenTemplate}
+        onGoHome={() => setShowHome(true)}
         templateList={getTemplateList()}
       />
+      
+      {showCloudModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000]">
+          <div className="bg-[#1a1a1a] rounded-2xl border border-[#333] w-[450px] max-h-[500px] overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#333]">
+              <h3 className="text-white font-semibold">Cloud Diagrams</h3>
+              <button onClick={() => setShowCloudModal(false)} className="text-[#888] hover:text-white">✕</button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[400px]">
+              {cloudDiagrams.length === 0 ? (
+                <p className="text-[#666] text-center py-8">No saved diagrams</p>
+              ) : (
+                <div className="space-y-2">
+                  {cloudDiagrams.map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => handleLoadFromCloud(d.id)}
+                      className="w-full p-3 rounded-xl bg-[#252525] hover:bg-[#333] text-left flex items-center justify-between"
+                    >
+                      <div>
+                        <p className="text-white text-sm font-medium">{d.title}</p>
+                        <p className="text-[#666] text-xs">{new Date(d.updated_at).toLocaleDateString()}</p>
+                      </div>
+                      <span className="text-[#6C47FF]">→</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="flex-1 flex overflow-hidden">
         <Toolbar
@@ -507,7 +615,7 @@ case 'a':
         />
       </div>
       
-      <AIPanel
+      <AIChatPanel
         open={state.aiPanelOpen}
         onClose={() => setAiPanelOpen(false)}
         mode={state.aiMode}
@@ -526,11 +634,9 @@ case 'a':
         cooldownRemaining={cooldownRemaining}
       />
       
-      <AIButton
+      <AIChatButton
         onClick={() => setAiPanelOpen(!state.aiPanelOpen)}
-        loading={state.aiLoading}
-        disabled={!canMakeRequest}
-        cooldownRemaining={cooldownRemaining}
+        isOpen={state.aiPanelOpen}
       />
       
       <LoadingOverlay

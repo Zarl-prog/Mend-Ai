@@ -1,6 +1,7 @@
 import { generateId } from './uid';
+import { applyLayout } from './layoutEngine';
 
-export function parseAIResponse(rawText, offsetX = 0, offsetY = 0) {
+export function parseAIResponse(rawText, offsetX = 0, offsetY = 0, preservePositions = false) {
   let cleanedText = rawText
     .replace(/```json\s*/g, '')
     .replace(/```\s*/g, '')
@@ -21,6 +22,8 @@ export function parseAIResponse(rawText, offsetX = 0, offsetY = 0) {
     throw new Error('AI response missing arrows array');
   }
 
+  const layoutType = parsed.layoutType || 'linear';
+  
   const idMap = {};
   const shapes = parsed.shapes.map((shape, index) => {
     const newId = generateId('shape');
@@ -29,12 +32,12 @@ export function parseAIResponse(rawText, offsetX = 0, offsetY = 0) {
     return {
       id: newId,
       type: shape.type || 'rect',
-      width: shape.width || 140,
-      height: shape.height || 70,
+      width: shape.width || 160,
+      height: shape.height || 60,
       label: shape.label || '',
-      fillColor: shape.fillColor || '#6C47FF',
-      strokeColor: shape.strokeColor || '#FFFFFF',
-      strokeWidth: shape.strokeWidth ?? 1.5,
+      fillColor: shape.fillColor || '#4A5568',
+      strokeColor: shape.strokeColor || 'rgba(255,255,255,0.15)',
+      strokeWidth: shape.strokeWidth ?? 1,
       textColor: shape.textColor || '#FFFFFF',
       fontSize: shape.fontSize || 13,
       fontBold: shape.fontBold || false,
@@ -54,7 +57,7 @@ export function parseAIResponse(rawText, offsetX = 0, offsetY = 0) {
       fromShapeId: fromId,
       toShapeId: toId,
       label: arrow.label || '',
-      color: arrow.color || '#AAAAAA',
+      color: arrow.color || '#63B3ED',
       strokeWidth: arrow.strokeWidth ?? 1.5,
       style: arrow.style || 'solid',
       arrowHead: arrow.arrowHead || 'end',
@@ -63,9 +66,18 @@ export function parseAIResponse(rawText, offsetX = 0, offsetY = 0) {
     };
   });
 
-  const arrangedShapes = arrangeShapesWithLayout(shapes, arrows, offsetX, offsetY);
+  let positionedShapes;
+  if (preservePositions) {
+    positionedShapes = shapes;
+  } else {
+    positionedShapes = applyLayout(shapes, layoutType);
+  }
+  
+  const offsetShapes = offsetX !== 0 || offsetY !== 0
+    ? positionedShapes.map(s => ({ ...s, x: s.x + offsetX, y: s.y + offsetY }))
+    : positionedShapes;
 
-  return { shapes: arrangedShapes, arrows };
+  return { shapes: offsetShapes, arrows };
 }
 
 function arrangeShapesWithLayout(shapes, arrows, startX, startY) {

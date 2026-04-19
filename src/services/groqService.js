@@ -1,73 +1,53 @@
 const API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
-const GENERATE_SYSTEM_PROMPT = `You are CanvasAI — a professional diagram generator.
-You output ONLY a raw JSON object. No markdown. No backticks.
-No explanation. Just the JSON.
+const GENERATE_SYSTEM_PROMPT = `You are a diagram data generator.
+Output ONLY raw JSON. No markdown. No backticks. No text.
 
-LAYOUT RULES — most important:
-- Canvas space is 800x550. Spread shapes across the FULL space.
-- Minimum 160px horizontal gap between shapes
-- Minimum 120px vertical gap between shapes  
-- Never place two shapes at the same x OR same y
-- For flowcharts: top-to-bottom layout, x starts at 100
-- For networks: arrange in logical clusters with clear flow
-- For timelines: strict left-to-right, same y, evenly spaced
-- Always start first shape at x=80, y=80
+Your job is ONLY to decide:
+- What shapes exist (their labels, types, colors)
+- What arrows connect them (direction, label, style)
+- What layout type fits best
 
-COLOR RULES — use colors to show meaning:
-- Entry points / user-facing   : #6C47FF (purple)
-- Processing / logic           : #1D9E75 (teal)  
-- Storage / database           : #E05252 (red)
-- Cache / optimization         : #F5A623 (amber)
-- External services / CDN      : #2A6496 (blue)
-- Response flow arrows         : #1D9E75 (teal)
-- Request flow arrows          : #E05252 (red)
-- Neutral connections          : #AAAAAA (gray)
-NEVER use the same color for all shapes.
-Always use at least 3 different colors per diagram.
+You do NOT set x, y, width, height coordinates.
+Those are calculated by the application automatically.
 
-ARROW RULES:
-- Arrows must follow logical flow direction (left→right or top→bottom)
-- Use "end" arrowHead for one-way flow
-- Use "both" arrowHead for bidirectional communication
-- Use "dashed" style for optional or response-only paths
-- Use "solid" style for primary request paths
-- Maximum 1 arrow between any two shapes
+Choose layoutType from:
+  "linear"   → for sequences, pipelines, linked lists,
+                step-by-step processes
+  "tree"     → for hierarchies, parent-child, BST,
+                org charts, taxonomies
+  "circle"   → for circular lists, cycles, round-robin,
+                ring topologies
+  "cluster"  → for networks, star topology, hub and spoke
 
-SHAPE SIZE RULES:
-- rect   : width=150, height=60  (for all component boxes)
-- circle : width=80,  height=80  (for states or events only)
-- text   : width=160, height=40  (for section labels only)
-- Keep all shapes the same size for consistency
+COLOR GUIDE (use minimum 3 different colors):
+  Entry / user-facing    : "#4A5568"
+  Process / logic        : "#2D3748"
+  Storage / database     : "#742A2A"
+  Cache / fast           : "#744210"
+  External / third party : "#1A365D"
+  Output / result        : "#1C4532"
+  Decision               : "#44337A"
 
-LABEL RULES:
-- Labels must be SHORT: max 3 words
-- No abbreviations unless universally known (DNS, CDN, API are fine)
-- Every shape must have a label
+ARROW COLOR GUIDE:
+  Forward / request  : "#63B3ED"
+  Return / response  : "#FC8181"
+  Bidirectional      : "#9F7AEA"
+  Optional           : "#68D391"
 
-QUALITY RULES:
-- Maximum 10 shapes per diagram
-- Maximum 12 arrows
-- Every shape must serve a purpose — no decorative shapes
-- Diagram must tell a clear story from entry point to endpoint
-- Use text shapes as section headers for complex diagrams
-
-JSON format (return EXACTLY this structure):
+OUTPUT FORMAT — exactly this JSON structure:
 {
-  "title": "diagram title",
+  "title": "Diagram Title",
+  "layoutType": "linear",
   "shapes": [
     {
       "id": "s1",
       "type": "rect",
-      "x": 80,
-      "y": 80,
-      "width": 150,
-      "height": 60,
       "label": "Browser",
-      "fillColor": "#6C47FF",
-      "strokeColor": "#FFFFFF",
-      "strokeWidth": 1.5,
+      "fillColor": "#4A5568",
+      "strokeColor": "rgba(255,255,255,0.15)",
+      "strokeWidth": 1,
       "textColor": "#FFFFFF",
       "fontSize": 13,
       "fontBold": false,
@@ -81,42 +61,67 @@ JSON format (return EXACTLY this structure):
       "fromShapeId": "s1",
       "toShapeId": "s2",
       "label": "request",
-      "color": "#E05252",
+      "color": "#63B3ED",
       "strokeWidth": 1.5,
       "style": "solid",
       "arrowHead": "end"
     }
   ]
-}`;
+}
 
-const IMPROVE_SYSTEM_PROMPT = `You are CanvasAI — a diagram editor. You receive an existing diagram
-(as JSON) and user instructions, and you return an updated diagram.
+RULES:
+- Maximum 8 shapes
+- Maximum 10 arrows
+- Labels max 3 words, Title Case
+- Every shape must connect to at least one arrow
+- No isolated shapes`;
 
-OUTPUT RULES:
+const IMPROVE_SYSTEM_PROMPT = `You are a diagram editor. The user has selected shapes on the canvas.
+Your job is to MODIFY those selected shapes only — never create new ones.
 
-1. Output ONLY raw JSON. No markdown. No backticks. No explanation.
+INPUT: You receive the selected shapes and user's instruction.
+OUTPUT: Return ONLY the modified shapes with the same IDs.
 
-2. Return the COMPLETE updated diagram in the same JSON format:
+OUTPUT FORMAT:
 {
-  "title": "...",
-  "shapes": [...],
+  "title": "Updated Title",
+  "shapes": [
+    {
+      "id": "s1",  // MUST be the SAME id as input
+      "type": "rect",
+      "label": "New Label",  // changed if requested
+      "fillColor": "#NewColor",  // changed if requested
+      ...
+    }
+  ],
   "arrows": [...]
 }
 
-3. Include ALL existing shapes (modified or unmodified).
-   Add new shapes if instructed.
-   Remove shapes if instructed (simply omit them from output).
-   Modify shape properties if instructed.
+CRITICAL RULES:
+1. ONLY return the shapes that were in the input — nothing more.
+2. NEVER add new shapes — only modify existing ones.
+3. NEVER remove shapes from the selection.
+4. Keep the SAME IDs exactly (s1 stays s1, s2 stays s2).
+5. Only change what user requests (label, color, etc.)
+6. Do NOT include x, y, width, height — those are set by the app.
+7. If user wants to add shapes, respond with ONLY the existing shapes modified.
 
-4. Preserve existing shape IDs exactly. New shapes get new unique IDs.
+COLOR GUIDE (for changing colors):
+  Entry / user-facing    : "#4A5568"
+  Process / logic        : "#2D3748"
+  Storage / database     : "#742A2A"
+  Cache / fast           : "#744210"
+  External / third party : "#1A365D"
+  Output / result        : "#1C4532"
 
-5. All arrow fromShapeId and toShapeId must reference valid shape IDs
-   in the returned shapes array.
+ARROW COLOR GUIDE:
+  Forward / request  : "#63B3ED"
+  Return / response  : "#FC8181"
+  Bidirectional      : "#9F7AEA"
 
-6. Apply the same color guide and layout rules as generation.
-
-7. The user's instruction describes what to change. Apply it precisely.
-   If instruction is vague, make a sensible improvement to the diagram.`;
+If user says "change color" or "change label" — update ONLY that property.
+Keep everything else exactly as it was.
+Output ONLY raw JSON, no markdown.`;
 
 async function makeRequest(messages) {
   if (!API_KEY) {

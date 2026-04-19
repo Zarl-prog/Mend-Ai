@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, onExportPNG, onExportSVG, onToggleTheme, darkMode, onOpenTemplates, templateList }) {
+export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, onCloudSave, onCloudLoad, onExportPNG, onExportSVG, onToggleTheme, darkMode, onOpenTemplates, templateList, onGoHome }) {
   const fileInputRef = React.useRef(null);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -26,12 +26,14 @@ export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, on
   return (
     <div className="h-12 bg-[#141414] border-b border-[#222] flex items-center justify-between px-4">
       <div className="flex items-center gap-3">
-        <svg className="w-6 h-6 text-[#6C47FF]" viewBox="0 0 24 24" fill="none">
+        <button onClick={onGoHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <svg className="w-6 h-6 text-[#6C47FF]" viewBox="0 0 24 24" fill="none">
             <path d="M12,2 L19,5.5 L19,12.5 L12,16 L5,12.5 L5,5.5 Z" fill="currentColor" opacity="0.7"/>
             <path d="M12,5 L19,8.5 L12,12 L5,8.5 Z" fill="currentColor"/>
             <path d="M5,8.5 L5,15.5 L12,19 L12,12 Z" fill="currentColor" opacity="0.5"/>
           </svg>
-        <div className="text-white font-semibold">CanvasAI</div>
+          <div className="text-white font-semibold">Mend AI</div>
+        </button>
       </div>
       
       <div className="flex-1 max-w-md mx-4">
@@ -82,14 +84,39 @@ export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, on
         </button>
         <button
           onClick={onSave}
-          className="px-3 py-1.5 text-sm text-[#888] hover:text-white hover:bg-[#222] rounded transition-colors"
+          className="px-3 py-1.5 text-sm text-[#888] hover:text-white hover:bg-[#222] rounded transition-colors flex items-center gap-1"
         >
-          Save
+          <span>↓</span> Save
         </button>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="px-3 py-1.5 text-sm text-[#888] hover:text-white hover:bg-[#222] rounded transition-colors"
+          className="px-3 py-1.5 text-sm text-[#888] hover:text-white hover:bg-[#222] rounded transition-colors flex items-center gap-1"
         >
+          <span>↑</span> Load
+        </button>
+        
+        <div className="w-px h-6 bg-[#222] mx-1" />
+        
+        <button
+          onClick={onCloudSave}
+          className="px-3 py-1.5 text-sm text-[#6C47FF] hover:text-white hover:bg-[#6C47FF]/20 rounded transition-colors flex items-center gap-1"
+          title="Save to Cloud"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L4 8v9a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" strokeWidth="2"/>
+            <path d="M12 2v9M8 6h8" stroke="currentColor" strokeWidth="2"/>
+          </svg>
+          Cloud
+        </button>
+        <button
+          onClick={onCloudLoad}
+          className="px-3 py-1.5 text-sm text-[#6C47FF] hover:text-white hover:bg-[#6C47FF]/20 rounded transition-colors flex items-center gap-1"
+          title="Load from Cloud"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L4 8v9a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" strokeWidth="2"/>
+            <path d="M12 2v9M8 6h8" stroke="currentColor" strokeWidth="2"/>
+          </svg>
           Load
         </button>
         <input

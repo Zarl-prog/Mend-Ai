@@ -4,9 +4,22 @@ const MAX_REQUESTS = 500;
 const COOLDOWN_MS = 3000;
 const RESET_HOURS = 24;
 
-const STORAGE_KEY = 'canvasai_rate_limit';
+const STORAGE_KEY = 'mend-ai_rate_limit';
 
 function loadRateLimitState() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      const data = JSON.parse(stored);
+      const resetTime = data.firstRequestTime + (RESET_HOURS * 60 * 60 * 1000);
+      if (Date.now() >= resetTime) {
+        return { count: 0, firstRequestTime: null };
+      }
+      return data;
+    } catch {
+      return { count: 0, firstRequestTime: null };
+    }
+  }
   return { count: 0, firstRequestTime: null };
 }
 
@@ -19,7 +32,7 @@ function saveRateLimitState(state) {
 export function useAIRateLimit() {
   const [rateLimitState, setRateLimitState] = useState(() => loadRateLimitState());
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
-  const cooldownIntervalRef = useRef(null);
+  const cooldownTimerRef = useRef(null);
   
   const isLimitReached = rateLimitState.count >= MAX_REQUESTS;
   const remainingRequests = Math.max(0, MAX_REQUESTS - rateLimitState.count);
@@ -30,29 +43,7 @@ export function useAIRateLimit() {
       const now = Date.now();
       const remaining = Math.max(0, resetTime - now);
       
-      if (remaining > 0) {
-        const remainingMinutes = Math.ceil(remaining / 60000);
-        
-        if (cooldownIntervalRef.current) clearInterval(cooldownIntervalRef.current);
-        
-        setCooldownRemaining(remaining);
-        
-        cooldownIntervalRef.current = setInterval(() => {
-          const now = Date.now();
-          const remainingMs = Math.max(0, resetTime - now);
-          setCooldownRemaining(remainingMs);
-          
-          if (remainingMs === 0) {
-            clearInterval(cooldownIntervalRef.current);
-            setRateLimitState({ count: 0, firstRequestTime: null });
-            saveRateLimitState({ count: 0, firstRequestTime: null });
-          }
-        }, 1000);
-        
-        return () => {
-          if (cooldownIntervalRef.current) clearInterval(cooldownIntervalRef.current);
-        };
-      } else {
+      if (remaining <= 0) {
         setRateLimitState({ count: 0, firstRequestTime: null });
         saveRateLimitState({ count: 0, firstRequestTime: null });
       }
@@ -71,20 +62,21 @@ export function useAIRateLimit() {
   }, []);
   
   const startCooldown = useCallback(() => {
+    if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+    
     setCooldownRemaining(COOLDOWN_MS);
     
-    if (cooldownIntervalRef.current) clearInterval(cooldownIntervalRef.current);
-    
-    cooldownIntervalRef.current = setInterval(() => {
+    cooldownTimerRef.current = setInterval(() => {
       setCooldownRemaining(prev => {
-        const newValue = prev - 1000;
+        const newValue = prev - 100;
         if (newValue <= 0) {
-          clearInterval(cooldownIntervalRef.current);
+          clearInterval(cooldownTimerRef.current);
+          cooldownTimerRef.current = null;
           return 0;
         }
         return newValue;
       });
-    }, 1000);
+    }, 100);
   }, []);
   
   const canMakeRequest = !isLimitReached && cooldownRemaining === 0;
