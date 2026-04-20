@@ -36,51 +36,86 @@ export function useExport() {
   
   const exportPNG = useCallback((svgElement, title) => {
     try {
-      const svg = svgElement;
-      if (!svg || svg.tagName !== 'svg') {
+      const svgEl = svgElement;
+      if (!svgEl || svgEl.tagName !== 'svg') {
         console.error('Invalid SVG element');
         return false;
       }
       
-      const clonedSvg = svg.cloneNode(true);
-      clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      const clone = svgEl.cloneNode(true);
+      
+      clone.querySelectorAll('.resize-handle, .connection-dot, .selection-outline').forEach(el => el.remove());
+      
+      const allShapes = [...svgEl.querySelectorAll('[data-shape-id]'), ...svgEl.querySelectorAll('.canvas-shape, .canvas-arrow')];
+      
+      let minX = Infinity, minY = Infinity;
+      let maxX = -Infinity, maxY = -Infinity;
+      
+      allShapes.forEach(shape => {
+        const rect = shape.getBoundingClientRect();
+        const svgRect = svgEl.getBoundingClientRect();
+        minX = Math.min(minX, rect.left - svgRect.left);
+        minY = Math.min(minY, rect.top - svgRect.top);
+        maxX = Math.max(maxX, rect.right - svgRect.left);
+        maxY = Math.max(maxY, rect.bottom - svgRect.top);
+      });
+      
+      const padding = 40;
+      const width = maxX - minX + padding * 2;
+      const height = maxY - minY + padding * 2;
+      
+      const exportW = isFinite(width) ? width : svgEl.clientWidth;
+      const exportH = isFinite(height) ? height : svgEl.clientHeight;
+      
+      clone.setAttribute('width', exportW);
+      clone.setAttribute('height', exportH);
+      clone.setAttribute('viewBox', isFinite(minX) ? `${minX - padding} ${minY - padding} ${exportW} ${exportH}` : `0 0 ${exportW} ${exportH}`);
+      
+      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bg.setAttribute('width', '100%');
+      bg.setAttribute('height', '100%');
+      bg.setAttribute('fill', '#111111');
+      clone.insertBefore(bg, clone.firstChild);
       
       const serializer = new XMLSerializer();
-      const svgString = serializer.serializeToString(clonedSvg);
+      const svgString = serializer.serializeToString(clone);
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
       
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       
       img.onload = () => {
-        canvas.width = img.width || 800;
-        canvas.height = img.height || 600;
+        const canvas = document.createElement('canvas');
+        canvas.width = exportW * 2;
+        canvas.height = exportH * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
         ctx.fillStyle = '#111111';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
+        ctx.fillRect(0, 0, exportW, exportH);
+        ctx.drawImage(img, 0, 0, exportW, exportH);
         
         canvas.toBlob((blob) => {
           const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${(title || 'diagram').replace(/[^a-z0-9]/gi, '_')}.png`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          const link = document.createElement('a');
+          link.download = (title || 'mendai-diagram').replace(/[^a-z0-9]/gi, '_') + '.png';
+          link.href = url;
+          link.click();
           URL.revokeObjectURL(url);
+          URL.revokeObjectURL(svgUrl);
         }, 'image/png');
       };
       
       img.onerror = () => {
-        console.error('Failed to load SVG image');
+        console.error('Export failed. Try again.');
+        URL.revokeObjectURL(svgUrl);
       };
       
-      const encoded = btoa(unescape(encodeURIComponent(svgString)));
-      img.src = 'data:image/svg+xml;base64,' + encoded;
+      img.src = svgUrl;
       
       return true;
-    } catch (error) {
-      console.error('Export PNG error:', error);
+    } catch (err) {
+      console.error('Export error:', err);
       return false;
     }
   }, []);

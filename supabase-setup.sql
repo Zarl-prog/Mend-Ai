@@ -1,22 +1,36 @@
--- Just create tables via Supabase UI (Table Editor), then use the Policy Builder
+-- Run these SQL commands in Supabase SQL Editor to fix RLS policies
 
--- 1. Go to Table Editor
--- 2. Create "profiles" table with columns:
---    - id: uuid, primary key
---    - display_name: text
---    - theme: text, default 'dark'
---    - grid_type: text, default 'square'
---    - grid_size: text, default 'medium'
---    - default_color: text, default '#6C47FF'
---    - default_font_size: integer, default 13
---    - snap_to_grid: boolean, default true
---    - auto_save: boolean, default true
---    - created_at: timestamp with time zone, default now()
+-- Drop existing policies if broken
+DROP POLICY IF EXISTS "Users can manage own profile" ON profiles;
 
--- 3. Enable RLS but DON'T use SQL - use Policy Builder instead:
---    Table Editor → profiles → Policies → Add Policy
---    Use the dropdown to create policies - it handles types automatically
+-- Recreate correct profiles policies
+CREATE POLICY "Users can insert own profile"
+ON profiles FOR INSERT
+WITH CHECK (auth.uid() = id);
 
--- For diagrams table:
--- 4. Add column: user_id (uuid)
--- 5. Enable RLS, create policies via Policy Builder
+CREATE POLICY "Users can read own profile"
+ON profiles FOR SELECT
+USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile"
+ON profiles FOR UPDATE
+USING (auth.uid() = id);
+
+-- For diagrams table
+DROP POLICY IF EXISTS "Users can manage own diagrams" ON diagrams;
+
+CREATE POLICY "Users can insert own diagram"
+ON diagrams FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can read own diagrams"
+ON diagrams FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own diagrams"
+ON diagrams FOR UPDATE
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own diagrams"
+ON diagrams FOR DELETE
+USING (auth.uid() = user_id);

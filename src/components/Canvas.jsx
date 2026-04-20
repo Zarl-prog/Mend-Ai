@@ -514,7 +514,8 @@ const handleKeyDown = useCallback((e) => {
     <div className="flex-1 relative overflow-hidden canvas-container">
       <svg
         ref={canvasRef}
-        className="w-full h-full"
+        id="main-canvas"
+        className="w-full h-full canvas-svg"
         style={{ position: 'absolute', top: 0, left: 0, cursor: isPanning ? 'grabbing' : tool === 'arrow' ? 'crosshair' : 'default', zIndex: 1, touchAction: 'none' }}
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}

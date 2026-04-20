@@ -22,7 +22,22 @@ export function AuthProvider({ children }) {
       async (event, session) => {
         setUser(session?.user ?? null)
         if (session?.user) {
-          await fetchProfile(session.user.id)
+          const { data } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', session.user.id)
+            .single()
+
+          if (!data) {
+            await supabase.from('profiles').insert({
+              id: session.user.id,
+              display_name:
+                session.user.user_metadata?.full_name ||
+                session.user.email?.split('@')[0] ||
+                'User'
+            })
+          }
+          fetchProfile(session.user.id)
         } else {
           setProfile(null)
         }
@@ -69,14 +84,15 @@ export function AuthProvider({ children }) {
   }
 
   const signInWithEmail = async (email, password) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email, password
     })
     if (error) throw error
+    return data
   }
 
   const signUpWithEmail = async (email, password, displayName) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -84,15 +100,35 @@ export function AuthProvider({ children }) {
       }
     })
     if (error) throw error
+
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: data.user.id,
+          display_name: displayName || email.split('@')[0],
+          theme: 'dark',
+          grid_type: 'square',
+          grid_size: 'medium',
+          default_color: '#6C47FF',
+          default_font_size: 13,
+          snap_to_grid: true,
+          auto_save: true
+        })
+      if (profileError) console.error('Profile error:', profileError)
+    }
+    return data
   }
 
   const signInWithGoogle = async () => {
-    const redirectUrl = window.location.origin + '/'
-    console.log('Google OAuth redirect to:', redirectUrl)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl
+        redirectTo: window.location.origin,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
       }
     })
     if (error) throw error

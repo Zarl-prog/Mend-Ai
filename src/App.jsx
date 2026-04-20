@@ -218,6 +218,24 @@ const svgRef = useRef(null);
         toggleSnapToGrid();
         return;
       }
+      
+      if (ctrl && (key === '=' || key === '+')) {
+        e.preventDefault();
+        const newZoom = Math.min(3, parseFloat((state.zoom + 0.25).toFixed(2)));
+        handleZoom(newZoom, { x: state.panX, y: state.panY });
+        return;
+      }
+      if (ctrl && key === '-') {
+        e.preventDefault();
+        const newZoom = Math.max(0.25, parseFloat((state.zoom - 0.25).toFixed(2)));
+        handleZoom(newZoom, { x: state.panX, y: state.panY });
+        return;
+      }
+      if (ctrl && key === '0') {
+        e.preventDefault();
+        handleZoom(1, { x: 0, y: 0 });
+        return;
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);

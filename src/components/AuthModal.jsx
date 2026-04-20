@@ -153,7 +153,7 @@ export default function AuthModal({ isOpen, onClose, requireAuth = false, messag
           </div>
           
           {error && (
-            <p className="text-red-400 text-sm">{error}</p>
+            <p style={{ color: '#FC8181', fontSize: '13px', marginTop: '8px' }}>{error}</p>
           )}
           
           <button
