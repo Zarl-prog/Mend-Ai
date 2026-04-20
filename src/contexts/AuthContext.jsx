@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../services/supabaseClient'
+import { initSessionMiddleware, startSessionRefresh, stopSessionRefresh } from '../services/sessionManager'
 
 const AuthContext = createContext(null)
 
@@ -9,6 +10,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    initSessionMiddleware();
+    
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       if (session?.user) fetchProfile(session.user.id)
