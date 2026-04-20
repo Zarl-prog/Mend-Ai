@@ -12,12 +12,27 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     initSessionMiddleware();
     
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
-      setLoading(false)
-    })
+    let isMounted = true;
+    
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        setUser(session?.user ?? null)
+        if (session?.user) await fetchProfile(session.user.id)
+      } catch (e) {
+        console.error('Auth init error:', e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    
+    initAuth();
 
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null)

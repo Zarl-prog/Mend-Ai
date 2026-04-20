@@ -5,6 +5,7 @@ export default function Home({ onNewProject, onLoadProject }) {
   const [diagrams, setDiagrams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadDiagrams();
@@ -12,11 +13,13 @@ export default function Home({ onNewProject, onLoadProject }) {
 
   const loadDiagrams = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await listDiagrams();
-      setDiagrams(data);
+      setDiagrams(data || []);
     } catch (e) {
-      console.error(e);
+      console.error('Load diagrams error:', e);
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -70,6 +73,23 @@ export default function Home({ onNewProject, onLoadProject }) {
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <div className="w-10 h-10 border-2 border-[#6C47FF] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <div className="w-20 h-20 bg-[#1a1a1a] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-red-500" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </div>
+              <p className="text-red-400 mb-2">Failed to load</p>
+              <p className="text-[#444] text-sm mb-4">{error}</p>
+              <button
+                onClick={loadDiagrams}
+                className="px-4 py-2 bg-[#6C47FF] text-white rounded-lg text-sm"
+              >
+                Try Again
+              </button>
             </div>
           ) : diagrams.length === 0 ? (
             <div className="text-center py-20">
