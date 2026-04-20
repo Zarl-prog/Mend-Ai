@@ -25,7 +25,8 @@ export default function AIChatPanel({
   canMakeRequest,
   isLimitReached,
   remainingRequests,
-  cooldownRemaining
+  cooldownRemaining,
+  isMobile = false
 }) {
   const [inputRef, setInputRef] = useState(null);
   const messagesEndRef = useRef(null);
@@ -65,8 +66,12 @@ export default function AIChatPanel({
         ? (mode === 'generate' ? 'Generating...' : 'Improving...')
         : mode === 'generate' ? 'Generate' : 'Improve';
 
+  const panelClass = isMobile
+    ? 'fixed bottom-0 left-0 right-0 h-[80vh] bg-[#1a1a1a] rounded-t-2xl shadow-2xl border-t border-[#333] z-[9998] overflow-hidden flex flex-col'
+    : 'fixed bottom-24 right-6 w-96 max-h-[500px] bg-[#1a1a1a] rounded-2xl shadow-2xl border border-[#333] z-[9998] overflow-hidden flex flex-col';
+
   return (
-    <div className="fixed bottom-24 right-6 w-96 max-h-[500px] bg-[#1a1a1a] rounded-2xl shadow-2xl border border-[#333] z-[9998] overflow-hidden flex flex-col">
+    <div className={panelClass}>
       <div className="flex items-center justify-between px-5 py-4 border-b border-[#333] bg-gradient-to-r from-[#6C47FF]/10 to-[#1D9E75]/10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C47FF] to-[#1D9E75] flex items-center justify-center">
@@ -138,19 +143,35 @@ export default function AIChatPanel({
         {mode === 'generate' && (
           <div className="space-y-2">
             <p className="text-xs text-[#666]">Quick templates:</p>
-            <div className="grid grid-cols-3 gap-2">
-              {presets.map((preset) => (
-                <button
-                  key={preset.label}
-                  onClick={() => handlePresetClick(preset.label)}
-                  disabled={loading}
-                  className="p-2 rounded-xl bg-[#252525] hover:bg-[#333] text-xs text-gray-300 hover:text-white transition-all flex flex-col items-center gap-1 disabled:opacity-50"
-                >
-                  <span className="text-lg">{preset.icon}</span>
-                  <span>{preset.label}</span>
-                </button>
-              ))}
-            </div>
+            {isMobile ? (
+              <div className="flex gap-2 overflow-x-auto pb-2 -webkit-overflow-scrolling-touch" style={{ scrollbarWidth: 'none' }}>
+                {presets.map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => handlePresetClick(preset.label)}
+                    disabled={loading}
+                    className="flex-shrink-0 px-4 py-2 rounded-xl bg-[#252525] hover:bg-[#333] text-xs text-gray-300 hover:text-white transition-all flex flex-col items-center gap-1 disabled:opacity-50"
+                  >
+                    <span className="text-lg">{preset.icon}</span>
+                    <span>{preset.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {presets.map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => handlePresetClick(preset.label)}
+                    disabled={loading}
+                    className="p-2 rounded-xl bg-[#252525] hover:bg-[#333] text-xs text-gray-300 hover:text-white transition-all flex flex-col items-center gap-1 disabled:opacity-50"
+                  >
+                    <span className="text-lg">{preset.icon}</span>
+                    <span>{preset.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -181,7 +202,8 @@ export default function AIChatPanel({
             onChange={(e) => onPromptChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={mode === 'generate' ? "Describe a diagram to generate..." : "Describe how to improve the selection..."}
-            className="w-full h-20 bg-[#252525] text-white text-sm px-4 py-3 rounded-xl border border-[#333] resize-none focus:border-[#6C47FF] focus:ring-2 focus:ring-purple-500/20 outline-none transition-all placeholder:text-[#666]"
+            className={`w-full h-20 bg-[#252525] text-white px-4 py-3 rounded-xl border border-[#333] resize-none focus:border-[#6C47FF] focus:ring-2 focus:ring-purple-500/20 outline-none transition-all placeholder:text-[#666] ${isMobile ? 'text-base' : 'text-sm'}`}
+            style={{ fontSize: isMobile ? 16 : undefined }}
           />
           <div className="flex items-center justify-between mt-2">
             <span className="text-xs text-[#555]">Ctrl + Enter to send</span>

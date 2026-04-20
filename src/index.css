@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --mobile: 768px;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -33,4 +37,52 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+html, body {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas-container {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, [role="button"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.top-bar {
+  padding-top: env(safe-area-inset-top);
+}
+
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+@media (max-width: 768px) {
+  .left-toolbar    { display: none !important; }
+  .properties-panel { display: none !important; }
+  .diagram-title   { display: none !important; }
+  
+  .bottom-nav      { display: flex !important; }
+  .mobile-fab      { display: flex !important; }
+}
+
+@media (min-width: 769px) {
+  .bottom-nav      { display: none !important; }
+  .mobile-fab      { display: none !important; }
 }

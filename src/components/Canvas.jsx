@@ -25,12 +25,21 @@ const Canvas = forwardRef(function Canvas({
   onMultiSelect,
   darkMode,
   snapToGrid = true,
-  gridSize = 20
+  gridSize = 20,
+  isMobile = false
 }, ref) {
   const canvasRef = useRef(null);
   const glowRef = useRef(null);
   const animFrameRef = useRef(null);
   const mousePos = useRef({ x: -999, y: -999 });
+  
+  const pinchStartDist = useRef(0);
+  const pinchStartZoom = useRef(1);
+  const pinchCenter = useRef({ x: 0, y: 0 });
+  const lastTapRef = useRef(0);
+  const touchStartPos = useRef({ x: 0, y: 0 });
+  const isTwoFingerGesture = useRef(false);
+  const initialPinchDist = useRef(0);
   
   React.useImperativeHandle(ref, () => canvasRef.current, []);
   
@@ -362,6 +371,139 @@ const handleKeyDown = useCallback((e) => {
     }
   };
   
+  const handleTouchStart = useCallback((e) => {
+    if (!isMobile) return;
+    e.preventDefault();
+    
+    if (e.touches.length === 2) {
+      isTwoFingerGesture.current = true;
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dx = t1.clientX - t2.clientX;
+      const dy = t1.clientY - t2.clientY;
+      initialPinchDist.current = Math.sqrt(dx * dx + dy * dy);
+      pinchStartDist.current = initialPinchDist.current;
+      pinchStartZoom.current = zoom;
+      pinchCenter.current = {
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2
+      };
+      setStartPan(pinchCenter.current);
+      return;
+    }
+    
+    isTwoFingerGesture.current = false;
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const point = {
+      x: (touch.clientX - rect.left - panX) / zoom,
+      y: (touch.clientY - rect.top - panY) / zoom
+    };
+    
+    if (tool === 'select') {
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const shapeEl = target?.closest('[data-shape-id]');
+      
+      if (!shapeEl) {
+        onDeselectAll();
+      }
+    } else if (tool === 'arrow') {
+      // Arrow tool requires clicking on shapes
+    } else if (['rect', 'circle', 'text', 'sticky'].includes(tool)) {
+      const shape = onCreateShape(tool, point.x, point.y);
+      onSelectShape(shape.id);
+    }
+  }, [isMobile, zoom, panX, panY, tool, onDeselectAll, onCreateShape, onSelectShape]);
+  
+  const handleTouchMove = useCallback((e) => {
+    if (!isMobile) return;
+    e.preventDefault();
+    
+    if (e.touches.length === 2 && isTwoFingerGesture.current) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dx = t1.clientX - t2.clientX;
+      const dy = t1.clientY - t2.clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      const scale = dist / pinchStartDist.current;
+      const newZoom = Math.min(3, Math.max(0.25, pinchStartZoom.current * scale));
+      onZoom(newZoom, { x: panX, y: panY });
+      
+      const currentCenter = {
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2
+      };
+      
+      const panDx = currentCenter.x - pinchCenter.current.x;
+      const panDy = currentCenter.y - pinchCenter.current.y;
+      onPan({ x: panX + panDx, y: panY + panDy });
+      
+      return;
+    }
+    
+    if (isTwoFingerGesture.current) return;
+    
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      
+      if (selectionBox) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const point = {
+          x: (touch.clientX - rect.left - panX) / zoom,
+          y: (touch.clientY - rect.top - panY) / zoom
+        };
+        setSelectionBox({
+          ...selectionBox,
+          x: Math.min(point.x, selectionBox.startX),
+          y: Math.min(point.y, selectionBox.startY),
+          width: Math.abs(point.x - selectionBox.startX),
+          height: Math.abs(point.y - selectionBox.startY)
+        });
+      }
+    }
+  }, [isMobile, zoom, panX, panY, selectionBox, onZoom, onPan]);
+  
+  const handleTouchEnd = useCallback((e) => {
+    if (!isMobile) return;
+    e.preventDefault();
+    
+    if (isTwoFingerGesture.current) {
+      isTwoFingerGesture.current = false;
+      return;
+    }
+    
+    if (e.touches.length === 0) {
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        // Double tap detected
+        if (selectedIds.length > 0) {
+          const selectedShape = shapes.find(s => selectedIds.includes(s.id));
+          if (selectedShape) {
+            // Emit event for label editing
+            const event = new CustomEvent('editShapeLabel', { detail: { shapeId: selectedShape.id } });
+            window.dispatchEvent(event);
+          }
+        }
+      }
+      lastTapRef.current = now;
+      
+      if (selectionBox && selectionBox.width > 5 && selectionBox.height > 5) {
+        const selectedShapes = shapes.filter(s => 
+          s.x >= selectionBox.x &&
+          s.y >= selectionBox.y &&
+          s.x + s.width <= selectionBox.x + selectionBox.width &&
+          s.y + s.height <= selectionBox.y + selectionBox.height
+        );
+        onMultiSelect(selectedShapes.map(s => s.id));
+      }
+      
+      setSelectionBox(null);
+    }
+  }, [isMobile, selectedIds, shapes, selectionBox, onMultiSelect]);
+  
   const getShapeById = (id) => shapes.find(s => s.id === id);
   const selectedShapes = shapes.filter(s => selectedIds.includes(s.id));
   const selectedArrow = arrows.find(a => a.isSelected);
@@ -369,16 +511,19 @@ const handleKeyDown = useCallback((e) => {
   const dotColor = darkMode ? '#1E1E1E' : '#DEDEDE';
   
   return (
-    <div className="flex-1 relative overflow-hidden">
+    <div className="flex-1 relative overflow-hidden canvas-container">
       <svg
         ref={canvasRef}
         className="w-full h-full"
-        style={{ position: 'absolute', top: 0, left: 0, cursor: isPanning ? 'grabbing' : tool === 'arrow' ? 'crosshair' : 'default', zIndex: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, cursor: isPanning ? 'grabbing' : tool === 'arrow' ? 'crosshair' : 'default', zIndex: 1, touchAction: 'none' }}
         onMouseDown={handleCanvasMouseDown}
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
         onWheel={handleWheel}
         onDoubleClick={handleCanvasDoubleClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <defs>
           <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">

@@ -1,6 +1,8 @@
 import React from 'react';
 
-export default function AIChatButton({ onClick, isOpen }) {
+export default function AIChatButton({ onClick, isOpen, isMobile = false }) {
+  if (isMobile) return null;
+  
   return (
     <button
       onClick={onClick}

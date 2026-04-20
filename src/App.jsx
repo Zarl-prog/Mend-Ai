@@ -12,10 +12,14 @@ import Home from './components/Home';
 import ShortcutsModal from './components/ShortcutsModal';
 import AuthModal from './components/AuthModal';
 import SettingsModal from './components/SettingsModal';
+import MobileTopBar from './components/MobileTopBar';
+import BottomNav from './components/BottomNav';
+import MobileProperties from './components/MobileProperties';
 import { useAuth } from './contexts/AuthContext';
 import { useCanvas } from './hooks/useCanvas';
 import { useAIRateLimit } from './hooks/useAIRateLimit';
 import { useExport } from './hooks/useExport';
+import { useMobile } from './hooks/useMobile';
 import { saveDiagram, loadDiagram } from './utils/saveLoad';
 import { parseAIResponse, getAutoFitBounds } from './utils/aiShapeParser';
 import { generateDiagram, improveDiagram } from './services/groqService';
@@ -74,6 +78,7 @@ export default function App() {
 const svgRef = useRef(null);
   const { exportSVG, exportPNG, exportPDF } = useExport();
   const { user, profile, addToast: authAddToast } = useAuth();
+  const isMobile = useMobile();
   
   // Debug auth state
   useEffect(() => {
@@ -641,23 +646,41 @@ case 'a':
 
   return (
     <div className={`h-screen flex flex-col ${state.darkMode ? 'dark' : ''}`}>
-      <TopBar
-        title={state.title}
-        onTitleChange={setTitle}
-        onNew={handleNew}
-        onSave={handleSave}
-        onLoad={handleLoad}
-        onCloudSave={handleCloudSave}
-        onCloudLoad={handleCloudLoad}
-        onExportPNG={handleExportPNG}
-        onExportSVG={handleExportSVG}
-        onExportPDF={handleExportPDF}
-        onToggleTheme={() => setDarkMode(!state.darkMode)}
-        darkMode={state.darkMode}
-        onOpenTemplates={handleOpenTemplate}
-        onGoHome={() => setShowHome(true)}
-        templateList={getTemplateList()}
-      />
+      {isMobile ? (
+        <MobileTopBar
+          title={state.title}
+          onNew={handleNew}
+          onSave={handleSave}
+          onCloudSave={handleCloudSave}
+          onCloudLoad={handleCloudLoad}
+          onExportPNG={handleExportPNG}
+          onExportSVG={handleExportSVG}
+          onGoHome={() => setShowHome(true)}
+          onToggleAI={() => setAiPanelOpen(!state.aiPanelOpen)}
+          user={user}
+          profile={profile}
+          onOpenAuth={() => setShowAuthModal(true)}
+          onOpenSettings={() => setShowSettingsModal(true)}
+        />
+      ) : (
+        <TopBar
+          title={state.title}
+          onTitleChange={setTitle}
+          onNew={handleNew}
+          onSave={handleSave}
+          onLoad={handleLoad}
+          onCloudSave={handleCloudSave}
+          onCloudLoad={handleCloudLoad}
+          onExportPNG={handleExportPNG}
+          onExportSVG={handleExportSVG}
+          onExportPDF={handleExportPDF}
+          onToggleTheme={() => setDarkMode(!state.darkMode)}
+          darkMode={state.darkMode}
+          onOpenTemplates={handleOpenTemplate}
+          onGoHome={() => setShowHome(true)}
+          templateList={getTemplateList()}
+        />
+      )}
       
       {showCloudModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000]">
@@ -692,39 +715,41 @@ case 'a':
       )}
       
       <div className="flex-1 flex overflow-hidden">
-        <Toolbar
-          tool={state.tool}
-          setTool={setTool}
-          canUndo={history.past.length > 0}
-          canRedo={history.future.length > 0}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          onDelete={() => {
-            pushHistory();
-            if (state.selectedIds.length > 0) deleteSelected();
-          }}
-          onSelectAll={selectAll}
-          selectedCount={state.selectedIds.length}
-          snapToGrid={state.snapToGrid}
-          onToggleSnap={toggleSnapToGrid}
-          onAlignLeft={() => { pushHistory(); alignShapes('left'); }}
-          onAlignCenter={() => { pushHistory(); alignShapes('center'); }}
-          onAlignRight={() => { pushHistory(); alignShapes('right'); }}
-          onAlignTop={() => { pushHistory(); alignShapes('top'); }}
-          onAlignMiddle={() => { pushHistory(); alignShapes('middle'); }}
-          onAlignBottom={() => { pushHistory(); alignShapes('bottom'); }}
-          onBringForward={bringForward}
-          onSendBackward={sendBackward}
-          onDuplicate={() => { pushHistory(); duplicateSelected(); }}
-          onCopy={copySelected}
-          onPaste={pasteCopied}
-          onToggleDarkMode={() => setDarkMode(!state.darkMode)}
-          darkMode={state.darkMode}
-          hasCopiedShapes={!!state.copiedShapes}
-          onToggleShortcuts={() => setShowShortcutsModal(true)}
-          onOpenAuth={() => setShowAuthModal(true)}
-          onOpenSettings={() => setShowSettingsModal(true)}
-        />
+        {!isMobile && (
+          <Toolbar
+            tool={state.tool}
+            setTool={setTool}
+            canUndo={history.past.length > 0}
+            canRedo={history.future.length > 0}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onDelete={() => {
+              pushHistory();
+              if (state.selectedIds.length > 0) deleteSelected();
+            }}
+            onSelectAll={selectAll}
+            selectedCount={state.selectedIds.length}
+            snapToGrid={state.snapToGrid}
+            onToggleSnap={toggleSnapToGrid}
+            onAlignLeft={() => { pushHistory(); alignShapes('left'); }}
+            onAlignCenter={() => { pushHistory(); alignShapes('center'); }}
+            onAlignRight={() => { pushHistory(); alignShapes('right'); }}
+            onAlignTop={() => { pushHistory(); alignShapes('top'); }}
+            onAlignMiddle={() => { pushHistory(); alignShapes('middle'); }}
+            onAlignBottom={() => { pushHistory(); alignShapes('bottom'); }}
+            onBringForward={bringForward}
+            onSendBackward={sendBackward}
+            onDuplicate={() => { pushHistory(); duplicateSelected(); }}
+            onCopy={copySelected}
+            onPaste={pasteCopied}
+            onToggleDarkMode={() => setDarkMode(!state.darkMode)}
+            darkMode={state.darkMode}
+            hasCopiedShapes={!!state.copiedShapes}
+            onToggleShortcuts={() => setShowShortcutsModal(true)}
+            onOpenAuth={() => setShowAuthModal(true)}
+            onOpenSettings={() => setShowSettingsModal(true)}
+          />
+        )}
         
         <Canvas
           ref={svgRef}
@@ -745,7 +770,6 @@ case 'a':
             return createShape(type, x, y);
           }}
           onUpdateShape={(id, updates) => {
-            // Fix undo glitch: push history on every shape update
             pushHistory();
             updateShape(id, updates);
           }}
@@ -761,26 +785,59 @@ case 'a':
           darkMode={state.darkMode}
           snapToGrid={state.snapToGrid}
           gridSize={state.gridSize}
+          isMobile={isMobile}
         />
         
-        <PropertiesPanel
-          selectedShapes={selectedShapes}
-          selectedArrow={selectedArrow}
+        {!isMobile && (
+          <PropertiesPanel
+            selectedShapes={selectedShapes}
+            selectedArrow={selectedArrow}
+            onUpdateShape={(id, updates) => {
+              pushHistory();
+              updateShape(id, updates);
+            }}
+            onUpdateArrow={(id, updates) => {
+              pushHistory();
+              updateArrow(id, updates);
+            }}
+            onDuplicate={handleDuplicate}
+            onDelete={handleDelete}
+            onDeleteAll={handleDeleteAll}
+            onDuplicateAll={handleDuplicateAll}
+            onAlign={handleAlign}
+          />
+        )}
+      </div>
+      
+      {isMobile && selectedShapes.length > 0 && (
+        <MobileProperties
+          selectedShape={selectedShapes[0]}
           onUpdateShape={(id, updates) => {
             pushHistory();
             updateShape(id, updates);
           }}
-          onUpdateArrow={(id, updates) => {
-            pushHistory();
-            updateArrow(id, updates);
-          }}
           onDuplicate={handleDuplicate}
           onDelete={handleDelete}
-          onDeleteAll={handleDeleteAll}
-          onDuplicateAll={handleDuplicateAll}
-          onAlign={handleAlign}
         />
-      </div>
+      )}
+      
+      {isMobile && (
+        <BottomNav
+          tool={state.tool}
+          setTool={setTool}
+          canUndo={history.past.length > 0}
+          canRedo={history.future.length > 0}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onDelete={() => {
+            pushHistory();
+            if (state.selectedIds.length > 0) deleteSelected();
+          }}
+          onSelectAll={selectAll}
+          selectedCount={state.selectedIds.length}
+          onGoHome={() => setShowHome(true)}
+        />
+      )}
       
       <AIChatPanel
         open={state.aiPanelOpen}
@@ -799,11 +856,13 @@ case 'a':
         isLimitReached={isLimitReached}
         remainingRequests={remainingRequests}
         cooldownRemaining={cooldownRemaining}
+        isMobile={isMobile}
       />
       
       <AIChatButton
         onClick={() => setAiPanelOpen(!state.aiPanelOpen)}
         isOpen={state.aiPanelOpen}
+        isMobile={isMobile}
       />
       
       <LoadingOverlay
