@@ -16,12 +16,17 @@ export function AuthProvider({ children }) {
     
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user }, error } = await supabase.auth.getUser();
         if (!isMounted) return;
-        setUser(session?.user ?? null)
-        if (session?.user) await fetchProfile(session.user.id)
+        if (error) {
+          setUser(null);
+        } else {
+          setUser(user ?? null);
+          if (user) await fetchProfile(user.id);
+        }
       } catch (e) {
         console.error('Auth init error:', e);
+        setUser(null);
       } finally {
         if (isMounted) setLoading(false);
       }
