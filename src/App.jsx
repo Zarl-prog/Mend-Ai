@@ -175,11 +175,24 @@ const svgRef = useRef(null);
         selectAll();
         return;
       }
+      if (key === 'escape') {
+        e.preventDefault();
+        deselectAll();
+        cancelConnecting();
+        setAiPanelOpen(false);
+        return;
+      }
+      
       if (key === 'delete' || key === 'backspace') {
         if (state.selectedIds.length > 0) {
           e.preventDefault();
           pushHistory();
           deleteSelected();
+        } else if (state.arrows.some(a => a.isSelected)) {
+          e.preventDefault();
+          pushHistory();
+          const arrow = state.arrows.find(a => a.isSelected);
+          if (arrow) deleteArrow(arrow.id);
         }
         return;
       }
@@ -240,7 +253,7 @@ const svgRef = useRef(null);
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showShortcutsModal, state.selectedIds.length]);
+  }, [showShortcutsModal, state.selectedIds.length, state.arrows]);
   
   const pushHistory = useCallback(() => {
     setHistory(prev => ({
@@ -584,74 +597,6 @@ addToast('Template loaded!', 'success');
   
   const selectedShapes = state.shapes.filter(s => state.selectedIds.includes(s.id));
   const selectedArrow = state.arrows.find(a => a.isSelected);
-  
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      
-      switch (e.key.toLowerCase()) {
-        case 'v':
-          setTool('select');
-          break;
-        case 'r':
-          setTool('rect');
-          break;
-        case 'c':
-          setTool('circle');
-          break;
-        case 't':
-          setTool('text');
-          break;
-        case 's':
-          if (!e.ctrlKey) setTool('sticky');
-          break;
-case 'a':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            selectAll();
-          } else {
-            setTool('arrow');
-          }
-          break;
-        case 'delete':
-        case 'backspace':
-          if (state.selectedIds.length > 0 || state.arrows.some(a => a.isSelected)) {
-            pushHistory();
-            if (state.selectedIds.length > 0) {
-              deleteSelected();
-            } else {
-              const arrow = state.arrows.find(a => a.isSelected);
-              if (arrow) deleteArrow(arrow.id);
-            }
-          }
-          break;
-        case 'z':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            if (e.shiftKey) {
-              handleRedo();
-            } else {
-              handleUndo();
-            }
-          }
-          break;
-        case 'y':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            handleRedo();
-          }
-          break;
-        case 'escape':
-          deselectAll();
-          cancelConnecting();
-          setAiPanelOpen(false);
-          break;
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setTool, deleteSelected, deleteArrow, selectAll, deselectAll, cancelConnecting, setAiPanelOpen, state.selectedIds, state.arrows, pushHistory, handleUndo, handleRedo]);
 
   if (showHome) {
     return (
