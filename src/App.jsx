@@ -558,7 +558,6 @@ addToast('Template loaded!', 'success');
     return (
       <Home 
         onNewProject={handleNewProject}
-        onLoadProject={handleHomeLoadProject}
       />
     );
   }
