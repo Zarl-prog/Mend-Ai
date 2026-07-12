@@ -38,8 +38,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isMounted) return;
         setUser(session?.user ?? null)
         if (session?.user) {
           const { data } = await supabase
@@ -57,13 +59,13 @@ export function AuthProvider({ children }) {
                 'User'
             })
           }
-          fetchProfile(session.user.id)
+          if (isMounted) fetchProfile(session.user.id)
         } else {
           setProfile(null)
         }
       }
     )
-    return () => subscription.unsubscribe()
+    return () => { isMounted = false; subscription.unsubscribe(); }
   }, [])
 
   const fetchProfile = async (userId) => {
@@ -76,9 +78,11 @@ export function AuthProvider({ children }) {
     if (data) {
       setProfile(data)
     } else {
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData?.user?.email || '';
       const newProfile = {
         id: userId,
-        display_name: user?.email?.split('@')[0] || 'User',
+        display_name: email?.split('@')[0] || 'User',
         theme: 'dark',
         grid_type: 'square',
         grid_size: 'medium',
