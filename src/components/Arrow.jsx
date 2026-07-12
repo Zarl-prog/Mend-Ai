@@ -11,11 +11,11 @@ export default function Arrow({ arrow, fromShape, toShape, onSelect, isSelected,
   const pathId = `arrow-${arrow.id}`;
   
   const getMidpoint = () => {
-    const parts = path.match(/M\s*([\d.]+),([\d.]+)\s*C\s*([\d.]+),([\d.]+)\s*([\d.]+),([\d.]+)\s*([\d.]+),([\d.]+)/);
+    const parts = path.match(/M\s*([\d.]+)\s+([\d.]+)\s+C\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
     if (!parts) return { x: 0, y: 0 };
     
-    const [, x1, , , , , x2] = parts.map(Number);
-    return { x: (x1 + x2) / 2, y: fromShape.y + fromShape.height / 2 };
+    const [, x1, y1, , , , , x2, y2] = parts.map(Number);
+    return { x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
   };
 
   const midpoint = getMidpoint();
@@ -72,51 +72,52 @@ export default function Arrow({ arrow, fromShape, toShape, onSelect, isSelected,
   };
 
   return (
-    <g onClick={(e) => { e.stopPropagation(); onSelect(arrow.id); }}>
-      <path
-        d={path}
-        fill="none"
-        stroke={getArrowColor()}
-        strokeWidth={arrow.strokeWidth}
-        strokeDasharray={getStrokeDasharray()}
-        markerEnd={arrow.arrowHead !== 'none' ? `url(#${pathId})` : undefined}
-        markerStart={arrow.arrowHead === 'both' ? `url(#${pathId}-start)` : undefined}
-      />
-      
-      <path
-        d={path}
-        fill="none"
-        stroke="transparent"
-        strokeWidth={14}
-        style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
-      />
-      
+    <g>
       {renderArrowhead()}
-      
-      {arrow.label && (
-        <g>
-          <rect
-            x={midpoint.x - 20}
-            y={midpoint.y - 10}
-            width={40}
-            height={20}
-            fill="rgba(140, 100, 255, 0.15)"
-            stroke="rgba(140, 100, 255, 0.3)"
-            strokeWidth={1}
-            rx={4}
-          />
-          <text
-            x={midpoint.x}
-            y={midpoint.y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fill="rgba(255, 255, 255, 0.85)"
-            fontSize={11}
-          >
-            {arrow.label}
-          </text>
-        </g>
-      )}
+      <g onClick={(e) => { e.stopPropagation(); onSelect(arrow.id); }}>
+        <path
+          d={path}
+          fill="none"
+          stroke={getArrowColor()}
+          strokeWidth={arrow.strokeWidth}
+          strokeDasharray={getStrokeDasharray()}
+          markerEnd={arrow.arrowHead !== 'none' ? `url(#${pathId})` : undefined}
+          markerStart={arrow.arrowHead === 'both' ? `url(#${pathId}-start)` : undefined}
+        />
+        
+        <path
+          d={path}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={14}
+          style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
+        />
+        
+        {arrow.label && (
+          <g>
+            <rect
+              x={midpoint.x - 20}
+              y={midpoint.y - 10}
+              width={40}
+              height={20}
+              fill="rgba(140, 100, 255, 0.15)"
+              stroke="rgba(140, 100, 255, 0.3)"
+              strokeWidth={1}
+              rx={4}
+            />
+            <text
+              x={midpoint.x}
+              y={midpoint.y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="rgba(255, 255, 255, 0.85)"
+              fontSize={11}
+            >
+              {arrow.label}
+            </text>
+          </g>
+        )}
+      </g>
     </g>
   );
 }
