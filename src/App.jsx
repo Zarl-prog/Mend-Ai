@@ -22,7 +22,7 @@ import { useExport } from './hooks/useExport';
 import { useMobile } from './hooks/useMobile';
 import { saveDiagram, loadDiagram } from './utils/saveLoad';
 import { parseAIResponse, getAutoFitBounds } from './utils/aiShapeParser';
-import { generateDiagram, improveDiagram } from './services/groqService';
+import { generateDiagram, improveDiagram } from './services/aiService';
 
 import { generateId } from './utils/uid';
 import { templates, getTemplateList } from './utils/templates';

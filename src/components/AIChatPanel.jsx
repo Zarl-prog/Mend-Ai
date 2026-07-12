@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { setApiKey, hasApiKey } from '../utils/apiKey';
+import { detectProvider, PROVIDERS } from '../utils/providers';
 
 const presets = [
   { label: 'Linked List', icon: '⬡', prompt: 'Create a linked list diagram showing nodes connected in sequence' },
@@ -33,6 +34,7 @@ export default function AIChatPanel({
   const [inputRef, setInputRef] = useState(null);
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [keyInputValue, setKeyInputValue] = useState('');
+  const [detectedProvider, setDetectedProvider] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -55,10 +57,21 @@ export default function AIChatPanel({
 
   if (!open) return null;
 
+  const handleKeyChange = (e) => {
+    const val = e.target.value;
+    setKeyInputValue(val);
+    if (val.trim()) {
+      setDetectedProvider(detectProvider(val.trim()));
+    } else {
+      setDetectedProvider(null);
+    }
+  };
+
   const handleSaveKey = () => {
     const trimmed = keyInputValue.trim();
     if (!trimmed) return;
-    setApiKey(trimmed);
+    const provider = detectProvider(trimmed);
+    setApiKey(trimmed, provider.id);
     setShowKeyInput(false);
     onKeySaved?.();
   };
@@ -118,30 +131,46 @@ export default function AIChatPanel({
               <path d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
           </div>
-          <h3 className="text-white font-semibold mb-1">Groq API Key Required</h3>
+          <h3 className="text-white font-semibold mb-1">API Key Required</h3>
           <p className="text-[#888] text-sm mb-2">
-            This app uses <span className="text-[#6C47FF]">Groq's LLM</span> to generate diagrams.
+            Paste any AI provider key — it auto-detects the service.
           </p>
-          <p className="text-[#666] text-xs mb-5">
-            Get a free key at{' '}
-            <a href="https://console.groq.com" target="_blank" rel="noreferrer" className="text-[#6C47FF] hover:underline">console.groq.com</a>
-            {' '}— no credit card needed.
-          </p>
-          <input
-            type="text"
-            value={keyInputValue}
-            onChange={(e) => setKeyInputValue(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSaveKey(); }}
-            placeholder="gsk_..."
-            className="w-full bg-[#252525] text-white px-4 py-3 rounded-xl border border-[#444] focus:border-[#6C47FF] focus:outline-none text-sm mb-4"
-          />
+          <div className="flex flex-wrap gap-1.5 mb-4 justify-center">
+            {PROVIDERS.filter((p,i,a) => a.findIndex(x => x.id === p.id) === i).map(p => (
+              <span key={p.id} className="px-2 py-1 rounded-lg bg-[#252525] text-[#888] text-xs border border-[#333]">
+                {p.icon} {p.name}
+              </span>
+            ))}
+          </div>
+          <div className="relative w-full mb-4">
+            <input
+              type="text"
+              value={keyInputValue}
+              onChange={handleKeyChange}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveKey(); }}
+              placeholder="Paste your API key..."
+              className="w-full bg-[#252525] text-white px-4 py-3 rounded-xl border border-[#444] focus:border-[#6C47FF] focus:outline-none text-sm"
+            />
+            {detectedProvider && (
+              <div className="absolute -bottom-6 left-0 flex items-center gap-1.5">
+                <span className="text-xs">{detectedProvider.icon}</span>
+                <span className="text-xs text-[#6C47FF] font-medium">{detectedProvider.name}</span>
+                <span className="text-[#555] text-xs">· {detectedProvider.model}</span>
+              </div>
+            )}
+          </div>
           <button
             onClick={handleSaveKey}
             disabled={!keyInputValue.trim()}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6C47FF] to-[#5a3dd9] text-white font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50"
           >
-            Save API Key
+            {detectedProvider ? `Use ${detectedProvider.name}` : 'Save API Key'}
           </button>
+          <p className="text-[#666] text-xs mt-3">
+            {detectedProvider
+              ? <>Get a key at <a href={detectedProvider.docsUrl} target="_blank" rel="noreferrer" className="text-[#6C47FF] hover:underline">{detectedProvider.docsUrl}</a></>
+              : <>Paste any API key — it works with Groq, OpenAI, Anthropic, Gemini, and more.</>}
+          </p>
         </div>
       </div>
     );

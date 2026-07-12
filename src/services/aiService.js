@@ -1,10 +1,17 @@
-import { getApiKey } from '../utils/apiKey';
+import { getApiKey, getStored } from '../utils/apiKey';
+import { PROVIDERS, detectProvider, extractContent, buildRequestBody, buildHeaders, buildEndpoint } from '../utils/providers';
 
-function resolveApiKey() {
-  return import.meta.env.VITE_GROQ_API_KEY || getApiKey();
+function resolveProvider() {
+  const envKey = import.meta.env.VITE_GROQ_API_KEY || import.meta.env.VITE_OPENAI_API_KEY
+  if (import.meta.env.VITE_GROQ_API_KEY) return PROVIDERS.find(p => p.id === 'groq') || detectProvider('gsk_')
+  if (import.meta.env.VITE_OPENAI_API_KEY) return PROVIDERS.find(p => p.id === 'openai') || detectProvider('sk-')
+  const stored = getStored()
+  if (stored?.provider) {
+    const found = PROVIDERS.find(p => p.id === stored.provider)
+    if (found) return found
+  }
+  return detectProvider(getApiKey())
 }
-
-const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
 const GENERATE_SYSTEM_PROMPT = `You are a diagram data generator.
 Output ONLY raw JSON. No markdown. No backticks. No text.
@@ -92,10 +99,10 @@ OUTPUT FORMAT:
   "title": "Updated Title",
   "shapes": [
     {
-      "id": "s1",  // MUST be the SAME id as input
+      "id": "s1",
       "type": "rect",
-      "label": "New Label",  // changed if requested
-      "fillColor": "#NewColor",  // changed if requested
+      "label": "New Label",
+      "fillColor": "#NewColor",
       ...
     }
   ],
@@ -129,54 +136,51 @@ Keep everything else exactly as it was.
 Output ONLY raw JSON, no markdown.`;
 
 async function makeRequest(messages) {
-  const key = resolveApiKey();
+  const key = getApiKey()
   if (!key) {
-    throw new Error('API_KEY_MISSING');
+    throw new Error('API_KEY_MISSING')
   }
-  
-  const response = await fetch(ENDPOINT, {
+
+  const provider = resolveProvider()
+  const endpoint = buildEndpoint(provider, key)
+  const headers = buildHeaders(provider, key)
+  const body = buildRequestBody(provider, messages)
+
+  const response = await fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${key}`
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages,
-      temperature: 0.2,
-      max_tokens: 3000
-    })
-  });
-  
-  if (response.status === 401) {
-    throw new Error('Invalid API key. Check your .env file.');
+    headers,
+    body: JSON.stringify(body)
+  })
+
+  if (response.status === 401 || response.status === 403) {
+    throw new Error('Invalid API key. Check your key and try again.')
   }
-  
+
   if (response.status === 429) {
-    throw new Error('Too many requests, please wait a moment');
+    throw new Error('Too many requests, please wait a moment')
   }
-  
+
   if (!response.ok) {
-    throw new Error('Connection failed. Check your internet.');
+    throw new Error('Connection failed. Check your internet.')
   }
-  
-  const data = await response.json();
-  
-  if (!data.choices || !data.choices[0]) {
-    throw new Error('AI returned nothing. Try rephrasing.');
+
+  const data = await response.json()
+  const content = await extractContent(data, provider.format)
+
+  if (!content) {
+    throw new Error('AI returned nothing. Try rephrasing.')
   }
-  
-  return data.choices[0].message.content;
+
+  return content
 }
 
 export async function generateDiagram(userPrompt) {
   const messages = [
     { role: 'system', content: GENERATE_SYSTEM_PROMPT },
     { role: 'user', content: userPrompt }
-  ];
-  
-  const response = await makeRequest(messages);
-  return response;
+  ]
+
+  return await makeRequest(messages)
 }
 
 export async function improveDiagram(userPrompt, shapeJSON) {
@@ -184,8 +188,7 @@ export async function improveDiagram(userPrompt, shapeJSON) {
     { role: 'system', content: IMPROVE_SYSTEM_PROMPT },
     { role: 'user', content: userPrompt },
     { role: 'user', content: `Current diagram JSON: ${shapeJSON}` }
-  ];
-  
-  const response = await makeRequest(messages);
-  return response;
+  ]
+
+  return await makeRequest(messages)
 }
