@@ -33,9 +33,10 @@ const shortcuts = [
 
 export default function SettingsModal({ isOpen, onClose }) {
   const [tab, setTab] = useState('account')
-  const { user, profile, updateProfile, signOut, resetPassword, addToast } = useAuth()
+  const { user, profile, updateProfile, signOut, resetPassword } = useAuth()
   const [displayName, setDisplayName] = useState('')
   const [diagramCount, setDiagramCount] = useState(0)
+  const [toastMsg, setToastMsg] = useState('')
   
   useEffect(() => {
     if (profile) {
@@ -58,14 +59,16 @@ export default function SettingsModal({ isOpen, onClose }) {
   const handleSaveDisplayName = async () => {
     if (displayName.trim() && displayName !== profile?.display_name) {
       await updateProfile({ display_name: displayName.trim() })
-      addToast?.('Display name saved', 'success')
+      setToastMsg('Display name saved')
+      setTimeout(() => setToastMsg(''), 2500)
     }
   }
   
   const handleChangePassword = async () => {
     if (user?.email) {
       await resetPassword(user.email)
-      addToast?.('Password reset email sent!', 'success')
+      setToastMsg('Password reset email sent!')
+      setTimeout(() => setToastMsg(''), 2500)
     }
   }
   
@@ -106,6 +109,11 @@ export default function SettingsModal({ isOpen, onClose }) {
           ))}
         </div>
         
+        {toastMsg && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg">
+            {toastMsg}
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto p-5">
           {tab === 'account' && (
             <div className="space-y-6">
