@@ -120,7 +120,15 @@ export default function Shape({
     };
     
     const glassFill = getGlassColor(fillColor, 0.08);
-    const glassStroke = strokeColor ? `rgba(${strokeColor.replace('#', '').match(/.{2}/g)?.map(h => parseInt(h, 16)).join(',')}, 0.25)` : 'rgba(255, 255, 255, 0.12)';
+    const parseHexColor = (color) => {
+      if (!color || color === 'transparent' || color.startsWith('rgba')) return null;
+      const hex = color.replace('#', '');
+      const parts = hex.match(/.{2}/g);
+      if (!parts) return null;
+      return parts.map(h => parseInt(h, 16));
+    };
+    const rgb = parseHexColor(strokeColor);
+    const glassStroke = rgb ? `rgba(${rgb.join(',')}, 0.25)` : 'rgba(255, 255, 255, 0.12)';
     
     switch (type) {
       case 'rect':
