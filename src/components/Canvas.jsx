@@ -64,7 +64,7 @@ const Canvas = forwardRef(function Canvas({
     
     const point = getCanvasPoint(e.clientX, e.clientY);
     
-    if (e.target === canvasRef.current || e.target.tagName === 'rect') {
+    if (e.target === canvasRef.current || e.target.id === 'canvas-bg' || e.target.id === 'canvas-grid') {
       if (tool === 'select') {
         if (e.shiftKey) {
           setSelectionBox({ x: point.x, y: point.y, width: 0, height: 0, startX: point.x, startY: point.y });
@@ -95,7 +95,7 @@ const Canvas = forwardRef(function Canvas({
     if (isPanning) {
       const dx = e.clientX - startPan.x;
       const dy = e.clientY - startPan.y;
-      onPan({ x: panX + dx, y: panY + dy });
+      onPan(panX + dx, panY + dy);
     }
   }, [selectionBox, isPanning, startPan, panX, panY, getCanvasPoint, onPan]);
   
@@ -132,10 +132,13 @@ const Canvas = forwardRef(function Canvas({
     }
   }, [zoom, panX, panY, onZoom]);
   
-const handleKeyDown = useCallback((e) => {
+  const lastMousePosRef = useRef({ x: 0, y: 0 });
+
+  const handleKeyDown = useCallback((e) => {
     if (e.code === 'Space' && !isPanning) {
+      e.preventDefault();
       setIsPanning(true);
-      setStartPan({ x: e.clientX, y: e.clientY });
+      setStartPan({ x: lastMousePosRef.current.x, y: lastMousePosRef.current.y });
     }
   }, [isPanning]);
 
@@ -143,7 +146,7 @@ const handleKeyDown = useCallback((e) => {
     if (e.code === 'Space') {
       setIsPanning(false);
     }
-  });
+  }, []);
 
   useEffect(() => {
     const container = canvasRef.current;
@@ -162,6 +165,7 @@ const handleKeyDown = useCallback((e) => {
 
     const onMouseMove = (e) => {
       const rect = container.getBoundingClientRect();
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY };
       mousePos.current = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
@@ -366,7 +370,7 @@ const handleKeyDown = useCallback((e) => {
   };
   
   const handleCanvasDoubleClick = (e) => {
-    if (e.target === canvasRef.current || e.target.tagName === 'rect') {
+    if (e.target === canvasRef.current || e.target.id === 'canvas-bg' || e.target.id === 'canvas-grid') {
       onZoom(1, { x: 0, y: 0 });
     }
   };
@@ -439,7 +443,7 @@ const handleKeyDown = useCallback((e) => {
       
       const panDx = currentCenter.x - pinchCenter.current.x;
       const panDy = currentCenter.y - pinchCenter.current.y;
-      onPan({ x: panX + panDx, y: panY + panDy });
+      onPan(panX + panDx, panY + panDy);
       
       return;
     }
@@ -532,8 +536,8 @@ const handleKeyDown = useCallback((e) => {
           </pattern>
         </defs>
         
-        <rect width="100%" height="100%" fill={darkMode ? '#111111' : '#FFFFFF'} />
-        <rect width="100%" height="100%" fill="url(#grid)" />
+        <rect id="canvas-bg" width="100%" height="100%" fill={darkMode ? '#111111' : '#FFFFFF'} />
+        <rect id="canvas-grid" width="100%" height="100%" fill="url(#grid)" />
         
         <g transform={`translate(${panX}, ${panY}) scale(${zoom})`}>
           {arrows.map(arrow => (
