@@ -318,14 +318,15 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
             <div className="flex items-center gap-2">
               <input
                 type="color"
-                value={selectedShape.strokeColor}
+                value={selectedShape.strokeColor && selectedShape.strokeColor !== 'transparent' ? selectedShape.strokeColor : '#FFFFFF'}
                 onChange={(e) => onUpdateShape(selectedShape.id, { strokeColor: e.target.value })}
                 className="w-8 h-8 rounded cursor-pointer"
               />
               <input
                 type="text"
-                value={selectedShape.strokeColor}
-                onChange={(e) => onUpdateShape(selectedShape.id, { strokeColor: e.target.value })}
+                value={selectedShape.strokeColor === 'transparent' ? '' : selectedShape.strokeColor}
+                onChange={(e) => onUpdateShape(selectedShape.id, { strokeColor: e.target.value || 'transparent' })}
+                placeholder="transparent"
                 className="flex-1 bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
               />
             </div>
