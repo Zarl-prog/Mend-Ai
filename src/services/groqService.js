@@ -101,7 +101,7 @@ CRITICAL RULES:
 1. ONLY return the shapes that were in the input — nothing more.
 2. NEVER add new shapes — only modify existing ones.
 3. NEVER remove shapes from the selection.
-4. Keep the SAME IDs exactly (s1 stays s1, s2 stays s2).
+4. Keep the EXACT SAME IDs from the input — do NOT rename them.
 5. Only change what user requests (label, color, etc.)
 6. Do NOT include x, y, width, height — those are set by the app.
 7. If user wants to add shapes, respond with ONLY the existing shapes modified.

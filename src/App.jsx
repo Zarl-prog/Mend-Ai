@@ -341,9 +341,34 @@ const svgRef = useRef(null);
         selectedShapes.some(s => s.id === a.fromShapeId || s.id === a.toShapeId)
       );
       
-      const shapeJSON = JSON.stringify({ shapes: selectedShapes, arrows: selectedArrows });
+      // Map real UUIDs to simple IDs (s1, s2, ...) so the AI reliably returns them
+      const toSimple = {};
+      const fromSimple = {};
+      selectedShapes.forEach((s, i) => {
+        const simple = `s${i + 1}`;
+        toSimple[s.id] = simple;
+        fromSimple[simple] = s.id;
+      });
+      
+      const mappedShapes = selectedShapes.map(s => ({ ...s, id: toSimple[s.id] }));
+      const mappedArrows = selectedArrows.map(a => ({
+        ...a,
+        fromShapeId: toSimple[a.fromShapeId] || a.fromShapeId,
+        toShapeId: toSimple[a.toShapeId] || a.toShapeId,
+      }));
+      
+      const shapeJSON = JSON.stringify({ shapes: mappedShapes, arrows: mappedArrows });
       const response = await improveDiagram(prompt, shapeJSON);
-      const { shapes: newShapes, arrows: newArrows } = parseAIResponse(response, 0, 0, true);
+      const { shapes: newShapes, arrows: newArrows } = parseAIResponse(response, 0, 0, true, true);
+      
+      // Map simple IDs back to real UUIDs
+      newShapes.forEach(s => {
+        if (fromSimple[s.id]) s.id = fromSimple[s.id];
+      });
+      newArrows.forEach(a => {
+        if (fromSimple[a.fromShapeId]) a.fromShapeId = fromSimple[a.fromShapeId];
+        if (fromSimple[a.toShapeId]) a.toShapeId = fromSimple[a.toShapeId];
+      });
       
       const allShapes = [...state.shapes];
       

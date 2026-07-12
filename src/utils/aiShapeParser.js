@@ -1,7 +1,7 @@
 import { generateId } from './uid';
 import { applyLayout } from './layoutEngine';
 
-export function parseAIResponse(rawText, offsetX = 0, offsetY = 0, preservePositions = false) {
+export function parseAIResponse(rawText, offsetX = 0, offsetY = 0, preservePositions = false, keepOriginalIds = false) {
   let cleanedText = rawText
     .replace(/```json\s*/g, '')
     .replace(/```\s*/g, '')
@@ -26,8 +26,10 @@ export function parseAIResponse(rawText, offsetX = 0, offsetY = 0, preservePosit
   
   const idMap = {};
   const shapes = parsed.shapes.map((shape, index) => {
-    const newId = generateId('shape');
-    idMap[shape.id || `s${index + 1}`] = newId;
+    const newId = keepOriginalIds ? (shape.id || generateId('shape')) : generateId('shape');
+    if (!keepOriginalIds) {
+      idMap[shape.id || `s${index + 1}`] = newId;
+    }
     
     return {
       id: newId,
@@ -49,8 +51,8 @@ export function parseAIResponse(rawText, offsetX = 0, offsetY = 0, preservePosit
   });
 
   const arrows = parsed.arrows.map((arrow, index) => {
-    const fromId = idMap[arrow.fromShapeId] || arrow.fromShapeId;
-    const toId = idMap[arrow.toShapeId] || arrow.toShapeId;
+    const fromId = keepOriginalIds ? arrow.fromShapeId : (idMap[arrow.fromShapeId] || arrow.fromShapeId);
+    const toId = keepOriginalIds ? arrow.toShapeId : (idMap[arrow.toShapeId] || arrow.toShapeId);
     
     return {
       id: generateId('arrow'),

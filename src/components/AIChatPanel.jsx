@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const presets = [
-  { label: 'Linked List', icon: '⬡' },
-  { label: 'Stack & Queue', icon: '▤' },
-  { label: 'Binary Tree', icon: '⬢' },
-  { label: 'Flowchart', icon: '◇' },
-  { label: 'Network', icon: '◎' },
-  { label: 'Water Cycle', icon: '⟳' },
+  { label: 'Linked List', icon: '⬡', prompt: 'Create a linked list diagram showing nodes connected in sequence' },
+  { label: 'Stack & Queue', icon: '▤', prompt: 'Create a stack and queue data structure diagram' },
+  { label: 'Binary Tree', icon: '⬢', prompt: 'Create a binary tree diagram with a root, left and right children' },
+  { label: 'Flowchart', icon: '◇', prompt: 'Create a simple flowchart diagram with a start, decision, process, and end' },
+  { label: 'Network', icon: '◎', prompt: 'Create a network topology diagram with connected nodes' },
+  { label: 'Water Cycle', icon: '⟳', prompt: 'Create a water cycle diagram showing evaporation, condensation, precipitation, and collection' },
 ];
 
 export default function AIChatPanel({
@@ -52,9 +52,9 @@ export default function AIChatPanel({
     }
   };
 
-  const handlePresetClick = (preset) => {
-    onPromptChange(preset);
-    onGenerate(preset);
+  const handlePresetClick = (presetPrompt) => {
+    onPromptChange(presetPrompt);
+    onGenerate(presetPrompt);
   };
 
   const isDisabled = !prompt.trim() || loading || !canMakeRequest;
@@ -148,7 +148,7 @@ export default function AIChatPanel({
                 {presets.map((preset) => (
                   <button
                     key={preset.label}
-                    onClick={() => handlePresetClick(preset.label)}
+                    onClick={() => handlePresetClick(preset.prompt)}
                     disabled={loading}
                     className="flex-shrink-0 px-4 py-2 rounded-xl bg-[#252525] hover:bg-[#333] text-xs text-gray-300 hover:text-white transition-all flex flex-col items-center gap-1 disabled:opacity-50"
                   >
@@ -162,7 +162,7 @@ export default function AIChatPanel({
                 {presets.map((preset) => (
                   <button
                     key={preset.label}
-                    onClick={() => handlePresetClick(preset.label)}
+                    onClick={() => handlePresetClick(preset.prompt)}
                     disabled={loading}
                     className="p-2 rounded-xl bg-[#252525] hover:bg-[#333] text-xs text-gray-300 hover:text-white transition-all flex flex-col items-center gap-1 disabled:opacity-50"
                   >
