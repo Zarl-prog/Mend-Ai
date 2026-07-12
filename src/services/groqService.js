@@ -1,4 +1,9 @@
-const API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+import { getApiKey } from '../utils/apiKey';
+
+function resolveApiKey() {
+  return import.meta.env.VITE_GROQ_API_KEY || getApiKey();
+}
+
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
 const GENERATE_SYSTEM_PROMPT = `You are a diagram data generator.
@@ -124,15 +129,16 @@ Keep everything else exactly as it was.
 Output ONLY raw JSON, no markdown.`;
 
 async function makeRequest(messages) {
-  if (!API_KEY) {
-    throw new Error('Invalid API key. Check your .env file.');
+  const key = resolveApiKey();
+  if (!key) {
+    throw new Error('API_KEY_MISSING');
   }
   
   const response = await fetch(ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`
+      'Authorization': `Bearer ${key}`
     },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',

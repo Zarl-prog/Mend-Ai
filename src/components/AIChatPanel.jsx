@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { setApiKey, hasApiKey } from '../utils/apiKey';
 
 const presets = [
   { label: 'Linked List', icon: '⬡', prompt: 'Create a linked list diagram showing nodes connected in sequence' },
@@ -26,16 +27,25 @@ export default function AIChatPanel({
   isLimitReached,
   remainingRequests,
   cooldownRemaining,
-  isMobile = false
+  isMobile = false,
+  onKeySaved
 }) {
   const [inputRef, setInputRef] = useState(null);
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [keyInputValue, setKeyInputValue] = useState('');
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (open && inputRef) {
-      inputRef.focus();
+    if (open && !hasApiKey() && !showKeyInput) {
+      setShowKeyInput(true);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open && inputRef && !showKeyInput) {
+      inputRef.focus();
+    }
+  }, [open, showKeyInput]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -44,6 +54,14 @@ export default function AIChatPanel({
   }, [open, prompt]);
 
   if (!open) return null;
+
+  const handleSaveKey = () => {
+    const trimmed = keyInputValue.trim();
+    if (!trimmed) return;
+    setApiKey(trimmed);
+    setShowKeyInput(false);
+    onKeySaved?.();
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && e.ctrlKey) {
@@ -69,6 +87,65 @@ export default function AIChatPanel({
   const panelClass = isMobile
     ? 'fixed bottom-0 left-0 right-0 h-[80vh] bg-[#1a1a1a] rounded-t-2xl shadow-2xl border-t border-[#333] z-[9998] overflow-hidden flex flex-col'
     : 'fixed bottom-24 right-6 w-96 max-h-[500px] bg-[#1a1a1a] rounded-2xl shadow-2xl border border-[#333] z-[9998] overflow-hidden flex flex-col';
+
+  if (showKeyInput) {
+    return (
+      <div className={panelClass}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#333] bg-gradient-to-r from-[#6C47FF]/10 to-[#1D9E75]/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6C47FF] to-[#1D9E75] flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L19 6.5V12.5L12 17L5 12.5V6.5L12 2Z" fill="currentColor" opacity="0.7"/>
+                <path d="M12 5L19 9.5L12 14L5 9.5L12 5Z" fill="currentColor"/>
+                <path d="M5 9.5V16.5L12 21L12 14L5 9.5Z" fill="currentColor" opacity="0.5"/>
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold">AI Diagram Assistant</h3>
+              <p className="text-xs text-[#888]">Enter your API key to get started</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-[#888] hover:text-white hover:bg-[#333] transition-colors">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-full bg-[#6C47FF]/20 flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-[#6C47FF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+          </div>
+          <h3 className="text-white font-semibold mb-1">Groq API Key Required</h3>
+          <p className="text-[#888] text-sm mb-2">
+            This app uses <span className="text-[#6C47FF]">Groq's LLM</span> to generate diagrams.
+          </p>
+          <p className="text-[#666] text-xs mb-5">
+            Get a free key at{' '}
+            <a href="https://console.groq.com" target="_blank" rel="noreferrer" className="text-[#6C47FF] hover:underline">console.groq.com</a>
+            {' '}— no credit card needed.
+          </p>
+          <input
+            type="text"
+            value={keyInputValue}
+            onChange={(e) => setKeyInputValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSaveKey(); }}
+            placeholder="gsk_..."
+            className="w-full bg-[#252525] text-white px-4 py-3 rounded-xl border border-[#444] focus:border-[#6C47FF] focus:outline-none text-sm mb-4"
+          />
+          <button
+            onClick={handleSaveKey}
+            disabled={!keyInputValue.trim()}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#6C47FF] to-[#5a3dd9] text-white font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50"
+          >
+            Save API Key
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={panelClass}>

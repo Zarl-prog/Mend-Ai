@@ -320,7 +320,11 @@ const svgRef = useRef(null);
       setTool('select');
       setAiPrompt('');
     } catch (error) {
-      addToast(`AI error: ${error.message}`, 'error');
+      if (error.message === 'API_KEY_MISSING') {
+        addToast('Set your Groq API key in the AI panel first', 'warning');
+      } else {
+        addToast(`AI error: ${error.message}`, 'error');
+      }
     } finally {
       setAiLoading(false);
     }
@@ -391,7 +395,11 @@ const svgRef = useRef(null);
       addToast('✦ Diagram improved!', 'success');
       setAiPrompt('');
     } catch (error) {
-      addToast(`AI error: ${error.message}`, 'error');
+      if (error.message === 'API_KEY_MISSING') {
+        addToast('Set your Groq API key in the AI panel first', 'warning');
+      } else {
+        addToast(`AI error: ${error.message}`, 'error');
+      }
     } finally {
       setAiLoading(false);
     }
@@ -845,6 +853,7 @@ addToast('Template loaded!', 'success');
         remainingRequests={remainingRequests}
         cooldownRemaining={cooldownRemaining}
         isMobile={isMobile}
+        onKeySaved={() => addToast('API key saved!', 'success')}
       />
       
       <AIChatButton
