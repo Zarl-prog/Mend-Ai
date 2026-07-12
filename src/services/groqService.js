@@ -54,7 +54,7 @@ OUTPUT FORMAT — exactly this JSON structure:
       "strokeColor": "rgba(255,255,255,0.15)",
       "strokeWidth": 1,
       "textColor": "#FFFFFF",
-      "fontSize": 13,
+      "fontSize": 16,
       "fontBold": false,
       "fontItalic": false,
       "opacity": 1

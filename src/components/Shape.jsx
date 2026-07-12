@@ -86,13 +86,17 @@ export default function Shape({
     
     const textPos = getTextPosition();
     const textStyle = {
-      fill: textColor || 'rgba(255, 255, 255, 0.85)',
+      fill: textColor || '#FFFFFF',
       fontSize: `${fontSize}px`,
-      fontWeight: fontBold ? 'bold' : 'normal',
+      fontWeight: fontBold ? '700' : '600',
       fontStyle: fontItalic ? 'italic' : 'normal',
       fontFamily: 'inherit',
+      letterSpacing: '0.01em',
       textAnchor: 'middle',
       dominantBaseline: 'middle',
+      paintOrder: 'stroke',
+      stroke: textColor === '#FFFFFF' || !textColor ? 'rgba(0,0,0,0.15)' : 'transparent',
+      strokeWidth: '0.5px',
       pointerEvents: 'none'
     };
     

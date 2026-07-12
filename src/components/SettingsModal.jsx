@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../services/supabaseClient'
 
 const shortcuts = [
   { category: 'TOOLS', items: [
@@ -41,18 +40,8 @@ export default function SettingsModal({ isOpen, onClose }) {
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name || '')
-      fetchDiagramCount()
     }
   }, [profile])
-  
-  const fetchDiagramCount = async () => {
-    if (!user) return
-    const { count } = await supabase
-      .from('diagrams')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-    setDiagramCount(count || 0)
-  }
   
   if (!isOpen) return null
   
@@ -258,13 +247,13 @@ export default function SettingsModal({ isOpen, onClose }) {
               
               <div>
                 <label className="block text-[#888] text-sm mb-2">
-                  Default Font Size: {profile?.default_font_size || 13}px
+                  Default Font Size: {profile?.default_font_size || 16}px
                 </label>
                 <input
                   type="range"
                   min="10"
                   max="24"
-                  value={profile?.default_font_size || 13}
+                  value={profile?.default_font_size || 16}
                   onChange={(e) => handleSettingChange('default_font_size', parseInt(e.target.value))}
                   className="w-full"
                 />

@@ -41,7 +41,7 @@ export function parseAIResponse(rawText, offsetX = 0, offsetY = 0, preservePosit
       strokeColor: shape.strokeColor || 'rgba(255,255,255,0.15)',
       strokeWidth: shape.strokeWidth ?? 1,
       textColor: shape.textColor || '#FFFFFF',
-      fontSize: shape.fontSize || 13,
+      fontSize: shape.fontSize || 16,
       fontBold: shape.fontBold || false,
       fontItalic: shape.fontItalic || false,
       opacity: shape.opacity ?? 1,

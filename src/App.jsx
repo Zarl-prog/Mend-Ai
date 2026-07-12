@@ -10,7 +10,7 @@ import LoadingOverlay from './components/LoadingOverlay';
 import Toast from './components/Toast';
 import Home from './components/Home';
 import ShortcutsModal from './components/ShortcutsModal';
-import AuthModal from './components/AuthModal';
+
 import SettingsModal from './components/SettingsModal';
 import MobileTopBar from './components/MobileTopBar';
 import BottomNav from './components/BottomNav';
@@ -23,7 +23,7 @@ import { useMobile } from './hooks/useMobile';
 import { saveDiagram, loadDiagram } from './utils/saveLoad';
 import { parseAIResponse, getAutoFitBounds } from './utils/aiShapeParser';
 import { generateDiagram, improveDiagram } from './services/groqService';
-import { saveToSupabase, loadFromSupabase, listDiagrams, deleteFromSupabase } from './services/database';
+
 import { generateId } from './utils/uid';
 import { templates, getTemplateList } from './utils/templates';
 
@@ -77,16 +77,8 @@ export default function App() {
   
 const svgRef = useRef(null);
   const { exportSVG, exportPNG, exportPDF } = useExport();
-  const { user, profile, addToast: authAddToast } = useAuth();
+  const { profile } = useAuth();
   const isMobile = useMobile();
-  
-  // Debug auth state
-  useEffect(() => {
-    console.log('=== AUTH DEBUG ===')
-    console.log('User:', user)
-    console.log('Profile:', profile)
-    console.log('=================')
-  }, [user, profile])
   
   const {
     recordRequest,
@@ -103,9 +95,7 @@ const svgRef = useRef(null);
   const [aiPrompt, setAiPrompt] = useState('');
   const [showHome, setShowHome] = useState(true);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [authMessage, setAuthMessage] = useState('');
 
   const addToast = useCallback((message, type = 'success') => {
     const id = generateId('toast');
@@ -420,79 +410,12 @@ const svgRef = useRef(null);
     }
   }, [loadDiagramState, addToast]);
 
-  const [cloudDiagrams, setCloudDiagrams] = useState([]);
-  const [showCloudModal, setShowCloudModal] = useState(false);
-  
-  const handleCloudSave = useCallback(async () => {
-    if (!user) {
-      setAuthMessage('Sign in to save diagrams — it\'s free!')
-      setShowAuthModal(true)
-      return
-    }
-    if (state.shapes.length === 0) {
-      addToast('Nothing to save', 'warning');
-      return;
-    }
-    try {
-      await saveToSupabase(state.title, state.shapes, state.arrows, user.id);
-      addToast('Saved to cloud!', 'success');
-    } catch (error) {
-      addToast('Cloud save failed', 'error');
-    }
-  }, [state.title, state.shapes, state.arrows, user, addToast]);
-  
-  const handleCloudLoad = useCallback(async () => {
-    if (!user) {
-      setAuthMessage('Sign in to access your diagrams')
-      setShowAuthModal(true)
-      return
-    }
-    try {
-      const diagrams = await listDiagrams(user.id);
-      setCloudDiagrams(diagrams);
-      setShowCloudModal(true);
-    } catch (error) {
-      addToast('Failed to load diagrams', 'error');
-    }
-  }, [addToast]);
-  
-  const handleLoadFromCloud = useCallback(async (id) => {
-    try {
-      const data = await loadFromSupabase(id);
-      loadDiagramState({
-        title: data.title,
-        shapes: data.shapes,
-        arrows: data.arrows
-      });
-      setShowCloudModal(false);
-      setShowHome(false);
-      addToast('Loaded from cloud!', 'success');
-    } catch (error) {
-      addToast('Failed to load', 'error');
-    }
-  }, [loadDiagramState, addToast]);
-
   const handleNewProject = useCallback(() => {
     clearCanvas();
     setShowHome(false);
     setTitle('Untitled Diagram');
     setHistory({ past: [], future: [] });
   }, [clearCanvas, setTitle]);
-
-  const handleHomeLoadProject = useCallback(async (id) => {
-    try {
-      const data = await loadFromSupabase(id);
-      loadDiagramState({
-        title: data.title,
-        shapes: data.shapes,
-        arrows: data.arrows
-      });
-      setShowHome(false);
-      addToast('Project loaded!', 'success');
-    } catch (error) {
-      addToast('Failed to load project', 'error');
-    }
-  }, [loadDiagramState, addToast]);
 
 const handleExportPNG = useCallback(() => {
     if (state.shapes.length === 0) {
@@ -647,15 +570,11 @@ addToast('Template loaded!', 'success');
           title={state.title}
           onNew={handleNew}
           onSave={handleSave}
-          onCloudSave={handleCloudSave}
-          onCloudLoad={handleCloudLoad}
           onExportPNG={handleExportPNG}
           onExportSVG={handleExportSVG}
           onGoHome={() => setShowHome(true)}
           onToggleAI={() => setAiPanelOpen(!state.aiPanelOpen)}
-          user={user}
           profile={profile}
-          onOpenAuth={() => setShowAuthModal(true)}
           onOpenSettings={() => setShowSettingsModal(true)}
         />
       ) : (
@@ -665,8 +584,6 @@ addToast('Template loaded!', 'success');
           onNew={handleNew}
           onSave={handleSave}
           onLoad={handleLoad}
-          onCloudSave={handleCloudSave}
-          onCloudLoad={handleCloudLoad}
           onExportPNG={handleExportPNG}
           onExportSVG={handleExportSVG}
           onExportPDF={handleExportPDF}
@@ -676,38 +593,6 @@ addToast('Template loaded!', 'success');
           onGoHome={() => setShowHome(true)}
           templateList={getTemplateList()}
         />
-      )}
-      
-      {showCloudModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[10000]">
-          <div className="bg-[#1a1a1a] rounded-2xl border border-[#333] w-[450px] max-h-[500px] overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#333]">
-              <h3 className="text-white font-semibold">Cloud Diagrams</h3>
-              <button onClick={() => setShowCloudModal(false)} className="text-[#888] hover:text-white">✕</button>
-            </div>
-            <div className="p-4 overflow-y-auto max-h-[400px]">
-              {cloudDiagrams.length === 0 ? (
-                <p className="text-[#666] text-center py-8">No saved diagrams</p>
-              ) : (
-                <div className="space-y-2">
-                  {cloudDiagrams.map((d) => (
-                    <button
-                      key={d.id}
-                      onClick={() => handleLoadFromCloud(d.id)}
-                      className="w-full p-3 rounded-xl bg-[#252525] hover:bg-[#333] text-left flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="text-white text-sm font-medium">{d.title}</p>
-                        <p className="text-[#666] text-xs">{new Date(d.updated_at).toLocaleDateString()}</p>
-                      </div>
-                      <span className="text-[#6C47FF]">→</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       )}
       
       <div className="flex-1 flex overflow-hidden">
@@ -742,7 +627,6 @@ addToast('Template loaded!', 'success');
             darkMode={state.darkMode}
             hasCopiedShapes={!!state.copiedShapes}
             onToggleShortcuts={() => setShowShortcutsModal(true)}
-            onOpenAuth={() => setShowAuthModal(true)}
             onOpenSettings={() => setShowSettingsModal(true)}
           />
         )}
@@ -870,8 +754,6 @@ addToast('Template loaded!', 'success');
       <Toast toasts={toasts} removeToast={removeToast} />
       
       <ShortcutsModal isOpen={showShortcutsModal} onClose={() => setShowShortcutsModal(false)} />
-      
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} message={authMessage} />
       
       <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </div>

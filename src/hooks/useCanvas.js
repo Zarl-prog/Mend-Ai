@@ -315,7 +315,7 @@ export function useCanvas() {
       strokeColor: config.strokeColor,
       strokeWidth: 1.5,
       textColor: '#FFFFFF',
-      fontSize: 13,
+      fontSize: 16,
       fontBold: false,
       fontItalic: false,
       opacity: 1,

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, onCloudSave, onCloudLoad, onExportPNG, onExportSVG, onExportPDF, onToggleTheme, darkMode, onOpenTemplates, templateList, onGoHome }) {
+export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, onExportPNG, onExportSVG, onExportPDF, onToggleTheme, darkMode, onOpenTemplates, templateList, onGoHome }) {
   const fileInputRef = React.useRef(null);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -95,30 +95,6 @@ export default function TopBar({ title, onTitleChange, onNew, onSave, onLoad, on
           <span>↑</span> Load
         </button>
         
-        <div className="w-px h-6 bg-[#222] mx-1" />
-        
-        <button
-          onClick={onCloudSave}
-          className="px-3 py-1.5 text-sm text-[#6C47FF] hover:text-white hover:bg-[#6C47FF]/20 rounded transition-colors flex items-center gap-1"
-          title="Save to Cloud"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L4 8v9a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" strokeWidth="2"/>
-            <path d="M12 2v9M8 6h8" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          Cloud
-        </button>
-        <button
-          onClick={onCloudLoad}
-          className="px-3 py-1.5 text-sm text-[#6C47FF] hover:text-white hover:bg-[#6C47FF]/20 rounded transition-colors flex items-center gap-1"
-          title="Load from Cloud"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L4 8v9a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" strokeWidth="2"/>
-            <path d="M12 2v9M8 6h8" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          Load
-        </button>
         <input
           ref={fileInputRef}
           type="file"

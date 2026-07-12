@@ -13,7 +13,7 @@ export function useProfile() {
       gridSize: profile.grid_size || 'medium',
       snapToGrid: profile.snap_to_grid ?? true,
       defaultColor: profile.default_color || '#6C47FF',
-      defaultFontSize: profile.default_font_size || 13,
+      defaultFontSize: profile.default_font_size || 16,
       autoSave: profile.auto_save ?? true
     }
   }

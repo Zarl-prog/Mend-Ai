@@ -45,7 +45,7 @@ export function loadDiagram(file) {
           strokeColor: shape.strokeColor || '#FFFFFF',
           strokeWidth: shape.strokeWidth || 1.5,
           textColor: shape.textColor || '#FFFFFF',
-          fontSize: shape.fontSize || 13,
+          fontSize: shape.fontSize || 16,
           fontBold: shape.fontBold || false,
           fontItalic: shape.fontItalic || false,
           opacity: shape.opacity ?? 1,
