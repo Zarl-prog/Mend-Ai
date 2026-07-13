@@ -410,7 +410,9 @@ const Canvas = forwardRef(function Canvas({
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
       const shapeEl = target?.closest('[data-shape-id]');
       
-      if (!shapeEl) {
+      if (shapeEl) {
+        onSelectShape(shapeEl.getAttribute('data-shape-id'));
+      } else {
         onDeselectAll();
       }
     } else if (tool === 'arrow') {

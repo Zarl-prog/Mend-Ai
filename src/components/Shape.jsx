@@ -31,6 +31,19 @@ export default function Shape({
       onStartDrag(shape.id, e.clientX, e.clientY);
     }
   };
+
+  const handleTouchStart = (e) => {
+    e.stopPropagation();
+    const touch = e.touches[0];
+    if (!touch) return;
+    
+    onSelect(shape.id, false);
+    
+    if (!isResizing) {
+      setIsDragging(true);
+      onStartDrag(shape.id, touch.clientX, touch.clientY);
+    }
+  };
   
   const handleResizeStart = (e, handle) => {
     e.stopPropagation();
@@ -40,15 +53,21 @@ export default function Shape({
   };
   
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const getClient = (e) => {
+      const ce = e;
+      return { clientX: ce.clientX ?? ce.touches?.[0]?.clientX ?? 0, clientY: ce.clientY ?? ce.touches?.[0]?.clientY ?? 0 };
+    };
+    
+    const handleMove = (e) => {
+      const { clientX, clientY } = getClient(e);
       if (isDragging) {
-        onDrag(shape.id, e.clientX, e.clientY);
+        onDrag(shape.id, clientX, clientY);
       } else if (isResizing) {
-        onResize(shape.id, resizeHandle, e.clientX, e.clientY);
+        onResize(shape.id, resizeHandle, clientX, clientY);
       }
     };
     
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       if (isDragging) {
         setIsDragging(false);
         onEndDrag();
@@ -61,13 +80,17 @@ export default function Shape({
     };
     
     if (isDragging || isResizing) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handleMove);
+      window.addEventListener('mouseup', handleEnd);
+      window.addEventListener('touchmove', handleMove, { passive: false });
+      window.addEventListener('touchend', handleEnd);
     }
     
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleEnd);
     };
   }, [isDragging, isResizing, resizeHandle, shape.id]);
   
@@ -455,6 +478,7 @@ export default function Shape({
       ref={groupRef}
       data-shape-id={shape.id}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
       style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
     >
       {renderShape()}
