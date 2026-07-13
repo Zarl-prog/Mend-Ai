@@ -135,7 +135,7 @@ export default function Shape({
     
     const borderRadius = getCornerRadius();
     
-    const getGlassColor = (color, alpha = 0.08) => {
+    const getGlassColor = (color, alpha = 0.25) => {
       if (!color || color === 'transparent') {
         return `rgba(140, 100, 255, ${alpha})`;
       }
@@ -146,7 +146,7 @@ export default function Shape({
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
     
-    const glassFill = getGlassColor(fillColor, 0.08);
+    const glassFill = getGlassColor(fillColor, 0.25);
     const parseHexColor = (color) => {
       if (!color || color === 'transparent' || color.startsWith('rgba')) return null;
       const hex = color.replace('#', '');
@@ -172,7 +172,7 @@ export default function Shape({
                 </feMerge>
               </filter>
               <linearGradient id={`glass-grad-${shape.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="rgba(255, 255, 255, 0.08)"/>
+                <stop offset="0%" stopColor="rgba(255, 255, 255, 0.15)"/>
                 <stop offset="100%" stopColor="rgba(255, 255, 255, 0.02)"/>
               </linearGradient>
             </defs>
@@ -275,7 +275,7 @@ export default function Shape({
               width={width}
               height={height}
               rx={6}
-              fill={getGlassColor(fillColor, 0.12)}
+              fill={getGlassColor(fillColor, 0.25)}
               stroke={glassStroke}
               strokeWidth={strokeWidth || 1}
               opacity={opacity || 1}
