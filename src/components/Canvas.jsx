@@ -538,7 +538,7 @@ const Canvas = forwardRef(function Canvas({
           </pattern>
         </defs>
         
-        <rect id="canvas-bg" width="100%" height="100%" fill={darkMode ? '#111111' : '#FFFFFF'} />
+        <rect id="canvas-bg" width="100%" height="100%" fill={darkMode ? '#111111' : '#f8f9fa'} />
         <rect id="canvas-grid" width="100%" height="100%" fill="url(#grid)" />
         
         <g transform={`translate(${panX}, ${panY}) scale(${zoom})`}>

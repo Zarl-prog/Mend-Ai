@@ -563,7 +563,7 @@ addToast('Template loaded!', 'success');
   }
 
   return (
-    <div className={`h-screen flex flex-col ${state.darkMode ? 'dark' : ''}`}>
+    <div className={`h-screen flex flex-col ${state.darkMode ? 'dark' : ''}`} data-theme={state.darkMode ? 'dark' : 'light'}>
       {isMobile ? (
         <MobileTopBar
           title={state.title}
