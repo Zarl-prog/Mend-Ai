@@ -39,7 +39,7 @@ export default function BottomNav({
 
   return (
     <>
-      <div className="mobile-bottom-nav fixed bottom-0 left-0 right-0 h-14 bg-[#141414] border-t border-[#222] flex items-center justify-around px-2 z-30">
+      <div className="mobile-bottom-nav fixed bottom-0 left-0 right-0 h-14 bg-panel border-t border-panel flex items-center justify-around px-2 z-30">
         {tools.map((t) => (
           <button
             key={t.id}
@@ -47,7 +47,7 @@ export default function BottomNav({
             className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors ${
               tool === t.id
                 ? 'text-[#6C47FF] bg-[rgba(108,71,255,0.1)]'
-                : 'text-[#666] hover:text-white'
+                : 'text-muted hover:text-body'
             }`}
           >
             {t.icon}
@@ -57,7 +57,7 @@ export default function BottomNav({
         
         <button
           onClick={() => setShowMoreSheet(true)}
-          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg text-[#666] hover:text-white"
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg text-muted hover:text-body"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="12" cy="6" r="2"/>
@@ -77,7 +77,7 @@ export default function BottomNav({
         <div className="flex flex-col gap-1">
           <button
             onClick={() => { setTool('sticky'); setShowMoreSheet(false); }}
-            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-[#252525] text-white"
+            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-input text-body"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="4" y="4" width="16" height="16" rx="1"/>
@@ -86,12 +86,12 @@ export default function BottomNav({
             Sticky Note
           </button>
           
-          <div className="h-px bg-[#333] my-1" />
+          <div className="h-px bg-hover my-1" />
           
           <button
             onClick={() => { onUndo(); setShowMoreSheet(false); }}
             disabled={!canUndo}
-            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-[#252525] text-white disabled:opacity-30"
+            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-input text-body disabled:opacity-30"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 10h10a5 5 0 015 5v2M3 10l5-5M3 10l5 5"/>
@@ -101,7 +101,7 @@ export default function BottomNav({
           <button
             onClick={() => { onRedo(); setShowMoreSheet(false); }}
             disabled={!canRedo}
-            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-[#252525] text-white disabled:opacity-30"
+            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-input text-body disabled:opacity-30"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 10H11a5 5 0 00-5 5v2M21 10l-5-5M21 10l-5 5"/>
@@ -109,12 +109,12 @@ export default function BottomNav({
             Redo
           </button>
           
-          <div className="h-px bg-[#333] my-1" />
+          <div className="h-px bg-hover my-1" />
           
           <button
             onClick={() => { onDelete(); setShowMoreSheet(false); }}
             disabled={selectedCount === 0}
-            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-[#252525] text-[#FC8181] disabled:opacity-30"
+            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-input text-[#FC8181] disabled:opacity-30"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M8 6V4h8v2M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
@@ -123,7 +123,7 @@ export default function BottomNav({
           </button>
           <button
             onClick={() => { onSelectAll(); setShowMoreSheet(false); }}
-            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-[#252525] text-white"
+            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-input text-body"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="4" y="4" width="16" height="16" rx="2"/>
@@ -132,7 +132,7 @@ export default function BottomNav({
           </button>
           <button
             onClick={() => { setShowMoreSheet(false); onGoHome?.(); }}
-            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-[#252525] text-white"
+            className="w-full h-11 flex items-center gap-3 px-3 rounded-lg hover:bg-input text-body"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 12l9-7 9 7v9a2 2 0 01-2 2H5a2 2 0 01-2-2v-9z"/>

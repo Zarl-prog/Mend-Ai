@@ -74,23 +74,23 @@ export default function SettingsModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[1000]" onClick={onClose}>
       <div 
-        className="bg-[#1a1a1a] border border-[#333] rounded-2xl w-[560px] h-[500px] shadow-2xl flex flex-col"
+        className="bg-card border border-card rounded-2xl w-[560px] h-[500px] shadow-2xl flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-[#333]">
-          <h2 className="text-xl font-semibold text-white">Settings</h2>
-          <button onClick={onClose} className="text-[#666] hover:text-white text-xl">✕</button>
+        <div className="flex items-center justify-between p-5 border-b border-card">
+          <h2 className="text-xl font-semibold text-body">Settings</h2>
+          <button onClick={onClose} className="text-muted hover:text-body text-xl">✕</button>
         </div>
         
-        <div className="flex border-b border-[#333]">
+        <div className="flex border-b border-card">
           {['account', 'canvas', 'shortcuts'].map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`flex-1 py-3 text-sm font-medium transition-colors ${
                 tab === t 
-                  ? 'text-white border-b-2 border-[#6C47FF]' 
-                  : 'text-[#666] hover:text-white'
+                  ? 'text-body border-b-2 border-[#6C47FF]' 
+                  : 'text-muted hover:text-body'
               }`}
             >
               {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -99,7 +99,7 @@ export default function SettingsModal({ isOpen, onClose }) {
         </div>
         
         {toastMsg && (
-          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg">
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 px-4 py-2 bg-green-600 text-body text-sm rounded-lg shadow-lg">
             {toastMsg}
           </div>
         )}
@@ -107,24 +107,24 @@ export default function SettingsModal({ isOpen, onClose }) {
           {tab === 'account' && (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#6C47FF] flex items-center justify-center text-white text-xl font-semibold">
+                <div className="w-12 h-12 rounded-full bg-[#6C47FF] flex items-center justify-center text-body text-xl font-semibold">
                   {(profile?.display_name || user?.email?.[0] || 'U').toUpperCase()[0]}
                 </div>
                 <div>
-                  <div className="text-white font-semibold text-lg">{profile?.display_name || 'User'}</div>
-                  <div className="text-[#666] text-sm">{user?.email}</div>
-                  <span className="text-xs bg-[#333] text-[#888] px-2 py-0.5 rounded">Free</span>
+                  <div className="text-body font-semibold text-lg">{profile?.display_name || 'User'}</div>
+                  <div className="text-muted text-sm">{user?.email}</div>
+                  <span className="text-xs bg-hover text-secondary px-2 py-0.5 rounded">Free</span>
                 </div>
               </div>
               
               <div>
-                <label className="block text-[#888] text-sm mb-2">Display Name</label>
+                <label className="block text-secondary text-sm mb-2">Display Name</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="flex-1 bg-[#2a2a2a] border border-[#333] rounded-lg px-4 py-2 text-white text-sm focus:border-[#6C47FF] focus:outline-none"
+                    className="flex-1 bg-input border border-card rounded-lg px-4 py-2 text-body text-sm focus:border-[#6C47FF] focus:outline-none"
                   />
                   <button
                     onClick={handleSaveDisplayName}
@@ -136,50 +136,50 @@ export default function SettingsModal({ isOpen, onClose }) {
               </div>
               
               <div>
-                <label className="block text-[#888] text-sm mb-2">Email</label>
+                <label className="block text-secondary text-sm mb-2">Email</label>
                 <input
                   type="email"
                   value={user?.email || ''}
                   disabled
-                  className="w-full bg-[#2a2a2a] border border-[#333] rounded-lg px-4 py-2 text-[#666] text-sm cursor-not-allowed"
+                  className="w-full bg-input border border-card rounded-lg px-4 py-2 text-muted text-sm cursor-not-allowed"
                 />
-                <p className="text-[#666] text-xs mt-1">Contact support to change email</p>
+                <p className="text-muted text-xs mt-1">Contact support to change email</p>
               </div>
               
               <div>
                 <button
                   onClick={handleChangePassword}
-                  className="px-4 py-2 border border-[#333] text-white rounded-lg text-sm hover:bg-[#2a2a2a]"
+                  className="px-4 py-2 border border-card text-body rounded-lg text-sm hover:bg-input"
                 >
                   Change Password
                 </button>
               </div>
               
               <div>
-                <h3 className="text-[#888] text-sm mb-2">Your Usage</h3>
+                <h3 className="text-secondary text-sm mb-2">Your Usage</h3>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-[#2a2a2a] rounded-lg p-3">
-                    <div className="text-2xl font-semibold text-white">{diagramCount}</div>
-                    <div className="text-[#666] text-xs">Diagrams saved</div>
+                  <div className="bg-input rounded-lg p-3">
+                    <div className="text-2xl font-semibold text-body">{diagramCount}</div>
+                    <div className="text-muted text-xs">Diagrams saved</div>
                   </div>
-                  <div className="bg-[#2a2a2a] rounded-lg p-3">
-                    <div className="text-white text-sm">{memberSince}</div>
-                    <div className="text-[#666] text-xs">Member since</div>
+                  <div className="bg-input rounded-lg p-3">
+                    <div className="text-body text-sm">{memberSince}</div>
+                    <div className="text-muted text-xs">Member since</div>
                   </div>
-                  <div className="bg-[#2a2a2a] rounded-lg p-3">
-                    <div className="text-white text-sm">Free</div>
-                    <div className="text-[#666] text-xs">Account type</div>
+                  <div className="bg-input rounded-lg p-3">
+                    <div className="text-body text-sm">Free</div>
+                    <div className="text-muted text-xs">Account type</div>
                   </div>
                 </div>
               </div>
               
-              <div className="pt-4 border-t border-[#333]">
+              <div className="pt-4 border-t border-card">
                 <h3 className="text-red-400 text-sm mb-2">Danger Zone</h3>
                 <div className="border border-red-900/50 rounded-lg p-4">
                   <button className="text-red-400 text-sm hover:underline">
                     Delete Account
                   </button>
-                  <p className="text-[#666] text-xs mt-1">
+                  <p className="text-muted text-xs mt-1">
                     This will permanently delete your account and all diagrams.
                   </p>
                 </div>
@@ -190,8 +190,8 @@ export default function SettingsModal({ isOpen, onClose }) {
           {tab === 'canvas' && (
             <div className="space-y-5">
               <div>
-                <label className="block text-[#888] text-sm mb-2">Grid Style</label>
-                <div className="flex gap-1 bg-[#2a2a2a] rounded-lg p-1">
+                <label className="block text-secondary text-sm mb-2">Grid Style</label>
+                <div className="flex gap-1 bg-input rounded-lg p-1">
                   {['square', 'dots', 'none'].map(type => (
                     <button
                       key={type}
@@ -199,7 +199,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                       className={`flex-1 py-2 rounded-md text-sm capitalize transition-colors ${
                         profile?.grid_type === type 
                           ? 'bg-[#6C47FF] text-white' 
-                          : 'text-[#888] hover:text-white'
+                          : 'text-secondary hover:text-body'
                       }`}
                     >
                       {type}
@@ -209,8 +209,8 @@ export default function SettingsModal({ isOpen, onClose }) {
               </div>
               
               <div>
-                <label className="block text-[#888] text-sm mb-2">Grid Size</label>
-                <div className="flex gap-1 bg-[#2a2a2a] rounded-lg p-1">
+                <label className="block text-secondary text-sm mb-2">Grid Size</label>
+                <div className="flex gap-1 bg-input rounded-lg p-1">
                   {['small', 'medium', 'large'].map(size => (
                     <button
                       key={size}
@@ -218,7 +218,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                       className={`flex-1 py-2 rounded-md text-sm capitalize transition-colors ${
                         profile?.grid_size === size 
                           ? 'bg-[#6C47FF] text-white' 
-                          : 'text-[#888] hover:text-white'
+                          : 'text-secondary hover:text-body'
                       }`}
                     >
                       {size} ({gridSizes[size]}px)
@@ -228,7 +228,7 @@ export default function SettingsModal({ isOpen, onClose }) {
               </div>
               
               <div>
-                <label className="block text-[#888] text-sm mb-2">Default Shape Color</label>
+                <label className="block text-secondary text-sm mb-2">Default Shape Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -240,13 +240,13 @@ export default function SettingsModal({ isOpen, onClose }) {
                     type="text"
                     value={profile?.default_color || '#6C47FF'}
                     onChange={(e) => handleSettingChange('default_color', e.target.value)}
-                    className="flex-1 bg-[#2a2a2a] border border-[#333] rounded-lg px-4 py-2 text-white text-sm"
+                    className="flex-1 bg-input border border-card rounded-lg px-4 py-2 text-body text-sm"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-[#888] text-sm mb-2">
+                <label className="block text-secondary text-sm mb-2">
                   Default Font Size: {profile?.default_font_size || 16}px
                 </label>
                 <input
@@ -261,13 +261,13 @@ export default function SettingsModal({ isOpen, onClose }) {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-white text-sm">Snap to Grid</div>
-                  <div className="text-[#666] text-xs">Align shapes to grid</div>
+                  <div className="text-body text-sm">Snap to Grid</div>
+                  <div className="text-muted text-xs">Align shapes to grid</div>
                 </div>
                 <button
                   onClick={() => handleSettingChange('snap_to_grid', !profile?.snap_to_grid)}
                   className={`w-12 h-6 rounded-full transition-colors ${
-                    profile?.snap_to_grid ? 'bg-[#6C47FF]' : 'bg-[#333]'
+                    profile?.snap_to_grid ? 'bg-[#6C47FF]' : 'bg-hover'
                   }`}
                 >
                   <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
@@ -278,13 +278,13 @@ export default function SettingsModal({ isOpen, onClose }) {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-white text-sm">Auto Save</div>
-                  <div className="text-[#666] text-xs">Save diagram every 2 minutes</div>
+                  <div className="text-body text-sm">Auto Save</div>
+                  <div className="text-muted text-xs">Save diagram every 2 minutes</div>
                 </div>
                 <button
                   onClick={() => handleSettingChange('auto_save', !profile?.auto_save)}
                   className={`w-12 h-6 rounded-full transition-colors ${
-                    profile?.auto_save ? 'bg-[#6C47FF]' : 'bg-[#333]'
+                    profile?.auto_save ? 'bg-[#6C47FF]' : 'bg-hover'
                   }`}
                 >
                   <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
@@ -294,8 +294,8 @@ export default function SettingsModal({ isOpen, onClose }) {
               </div>
               
               <div>
-                <label className="block text-[#888] text-sm mb-2">Theme</label>
-                <div className="flex gap-1 bg-[#2a2a2a] rounded-lg p-1">
+                <label className="block text-secondary text-sm mb-2">Theme</label>
+                <div className="flex gap-1 bg-input rounded-lg p-1">
                   {['dark', 'light'].map(theme => (
                     <button
                       key={theme}
@@ -303,7 +303,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                       className={`flex-1 py-2 rounded-md text-sm capitalize transition-colors ${
                         profile?.theme === theme 
                           ? 'bg-[#6C47FF] text-white' 
-                          : 'text-[#888] hover:text-white'
+                          : 'text-secondary hover:text-body'
                       }`}
                     >
                       {theme}
@@ -322,8 +322,8 @@ export default function SettingsModal({ isOpen, onClose }) {
                   <div className="space-y-1">
                     {section.items.map(item => (
                       <div key={item.desc} className="flex justify-between items-center py-1">
-                        <span className="text-[#888] text-sm">{item.desc}</span>
-                        <kbd className="bg-[#2a2a2a] border border-[#444] rounded px-2 py-0.5 text-[#ececec] text-xs font-mono">
+                        <span className="text-secondary text-sm">{item.desc}</span>
+                        <kbd className="bg-input border border-card rounded px-2 py-0.5 text-body text-xs font-mono">
                           {item.key}
                         </kbd>
                       </div>

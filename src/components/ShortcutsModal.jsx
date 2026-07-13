@@ -36,14 +36,14 @@ export default function ShortcutsModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100]" onClick={onClose}>
       <div 
-        className="bg-[#1a1a1a] rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl"
+        className="bg-card rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-white">Keyboard Shortcuts</h2>
+          <h2 className="text-xl font-semibold text-body">Keyboard Shortcuts</h2>
           <button 
             onClick={onClose}
-            className="text-[#888] hover:text-white transition-colors"
+            className="text-secondary hover:text-body transition-colors"
           >
             ✕
           </button>
@@ -56,8 +56,8 @@ export default function ShortcutsModal({ isOpen, onClose }) {
               <div className="space-y-2">
                 {section.items.map((item) => (
                   <div key={item.key} className="flex justify-between items-center">
-                    <span className="text-sm text-[#888]">{item.description}</span>
-                    <kbd className="bg-[#2a2a2a] text-[#aaa] text-xs px-2 py-1 rounded">{item.key}</kbd>
+                    <span className="text-sm text-secondary">{item.description}</span>
+                    <kbd className="bg-input text-secondary text-xs px-2 py-1 rounded">{item.key}</kbd>
                   </div>
                 ))}
               </div>
@@ -65,8 +65,8 @@ export default function ShortcutsModal({ isOpen, onClose }) {
           ))}
         </div>
 
-        <div className="mt-6 pt-4 border-t border-[#333] text-center">
-          <p className="text-[#666] text-sm">Press <kbd className="bg-[#2a2a2a] text-[#aaa] text-xs px-2 py-0.5 rounded">?</kbd> to close this modal</p>
+        <div className="mt-6 pt-4 border-t border-card text-center">
+          <p className="text-muted text-sm">Press <kbd className="bg-input text-secondary text-xs px-2 py-0.5 rounded">?</kbd> to close this modal</p>
         </div>
       </div>
     </div>

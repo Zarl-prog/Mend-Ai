@@ -514,7 +514,7 @@ const Canvas = forwardRef(function Canvas({
   const selectedShapes = shapes.filter(s => selectedIds.includes(s.id));
   const selectedArrow = arrows.find(a => a.isSelected);
   
-  const dotColor = darkMode ? '#1E1E1E' : '#DEDEDE';
+  const dotColor = darkMode ? '#1E1E1E' : '#d1d5db';
   
   return (
     <div className="flex-1 relative overflow-hidden canvas-container">
@@ -538,7 +538,7 @@ const Canvas = forwardRef(function Canvas({
           </pattern>
         </defs>
         
-        <rect id="canvas-bg" width="100%" height="100%" fill={darkMode ? '#111111' : '#f8f9fa'} />
+        <rect id="canvas-bg" width="100%" height="100%" fill={darkMode ? '#111111' : '#f3f4f6'} />
         <rect id="canvas-grid" width="100%" height="100%" fill="url(#grid)" />
         
         <g transform={`translate(${panX}, ${panY}) scale(${zoom})`}>
@@ -601,7 +601,7 @@ const Canvas = forwardRef(function Canvas({
         }}
       />
       
-      <div className="absolute bottom-2 left-2 text-[#888] text-sm">
+      <div className="absolute bottom-2 left-2 text-secondary text-sm">
         {Math.round(zoom * 100)}%
       </div>
     </div>

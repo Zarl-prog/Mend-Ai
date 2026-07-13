@@ -5,10 +5,10 @@ export default function Toast({ toasts, removeToast }) {
         <div
           key={toast.id}
           className={`px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-slide-in ${
-            toast.type === 'success' ? 'bg-green-600 text-white' :
-            toast.type === 'error' ? 'bg-red-600 text-white' :
-            toast.type === 'warning' ? 'bg-amber-600 text-white' :
-            'bg-blue-600 text-white'
+            toast.type === 'success' ? 'bg-green-600 text-body' :
+            toast.type === 'error' ? 'bg-red-600 text-body' :
+            toast.type === 'warning' ? 'bg-amber-600 text-body' :
+            'bg-blue-600 text-body'
           }`}
         >
           <div className="flex items-center gap-2">

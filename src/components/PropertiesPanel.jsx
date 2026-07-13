@@ -6,20 +6,20 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
   
   if (!selectedShape && !selectedArrow && selectedShapes.length === 0) {
     return (
-      <div className="w-60 bg-[#141414] border-l border-[#222] p-4 flex items-center justify-center">
-        <p className="text-[#666] text-sm text-center">Select a shape to edit its properties</p>
+      <div className="w-60 bg-panel border-l border-panel p-4 flex items-center justify-center">
+        <p className="text-muted text-sm text-center">Select a shape to edit its properties</p>
       </div>
     );
   }
   
   if (selectedArrow) {
     return (
-      <div className="w-60 bg-[#141414] border-l border-[#222] p-4 overflow-y-auto">
-        <h3 className="text-white font-medium mb-4">Arrow Properties</h3>
+      <div className="w-60 bg-panel border-l border-panel p-4 overflow-y-auto">
+        <h3 className="text-body font-medium mb-4">Arrow Properties</h3>
         
         <div className="space-y-4">
           <div>
-            <label className="text-[#888] text-sm block mb-1">Color</label>
+            <label className="text-secondary text-sm block mb-1">Color</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -31,13 +31,13 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                 type="text"
                 value={selectedArrow.color}
                 onChange={(e) => onUpdateArrow(selectedArrow.id, { color: e.target.value })}
-                className="flex-1 bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="flex-1 bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Stroke Width</label>
+            <label className="text-secondary text-sm block mb-1">Stroke Width</label>
             <input
               type="range"
               min="1"
@@ -49,7 +49,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Line Style</label>
+            <label className="text-secondary text-sm block mb-1">Line Style</label>
             <div className="flex gap-1">
               {['solid', 'dashed', 'dotted'].map((style) => (
                 <button
@@ -58,7 +58,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                   className={`flex-1 py-1.5 text-xs rounded capitalize ${
                     selectedArrow.style === style
                       ? 'bg-[#6C47FF] text-white'
-                      : 'bg-[#222] text-[#888] hover:text-white'
+                      : 'bg-hover text-secondary hover:text-body'
                   }`}
                 >
                   {style}
@@ -68,7 +68,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Arrow Head</label>
+            <label className="text-secondary text-sm block mb-1">Arrow Head</label>
             <div className="flex gap-1">
               {[
                 { id: 'end', label: 'End' },
@@ -81,7 +81,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                   className={`flex-1 py-1.5 text-xs rounded ${
                     selectedArrow.arrowHead === opt.id
                       ? 'bg-[#6C47FF] text-white'
-                      : 'bg-[#222] text-[#888] hover:text-white'
+                      : 'bg-hover text-secondary hover:text-body'
                   }`}
                 >
                   {opt.label}
@@ -91,18 +91,18 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Label</label>
+            <label className="text-secondary text-sm block mb-1">Label</label>
             <input
               type="text"
               value={selectedArrow.label || ''}
               onChange={(e) => onUpdateArrow(selectedArrow.id, { label: e.target.value })}
-              className="w-full bg-[#222] text-white text-sm px-2 py-1.5 rounded border border-[#333]"
+              className="w-full bg-hover text-body text-sm px-2 py-1.5 rounded border border-card"
             />
           </div>
           
           <button
             onClick={() => onDelete(selectedArrow.id)}
-            className="w-full py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors mt-4"
+            className="w-full py-2 bg-red-600 text-body text-sm rounded hover:bg-red-700 transition-colors mt-4"
           >
             Delete
           </button>
@@ -117,13 +117,13 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
     const allSameOpacity = selectedShapes.every(s => s.opacity === selectedShapes[0].opacity);
     
     return (
-      <div className="w-60 bg-[#141414] border-l border-[#222] p-4 overflow-y-auto">
-        <h3 className="text-white font-medium mb-4">{selectedShapes.length} shapes selected</h3>
+      <div className="w-60 bg-panel border-l border-panel p-4 overflow-y-auto">
+        <h3 className="text-body font-medium mb-4">{selectedShapes.length} shapes selected</h3>
         
         <div className="space-y-4">
           {allSameFill && (
             <div>
-              <label className="text-[#888] text-sm block mb-1">Fill Color</label>
+              <label className="text-secondary text-sm block mb-1">Fill Color</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -135,7 +135,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                   type="text"
                   value={selectedShapes[0].fillColor}
                   onChange={(e) => selectedShapes.forEach(s => onUpdateShape(s.id, { fillColor: e.target.value }))}
-                  className="flex-1 bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                  className="flex-1 bg-hover text-body text-sm px-2 py-1 rounded border border-card"
                 />
               </div>
             </div>
@@ -143,7 +143,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           
           {allSameStroke && (
             <div>
-              <label className="text-[#888] text-sm block mb-1">Stroke Color</label>
+              <label className="text-secondary text-sm block mb-1">Stroke Color</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -155,7 +155,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                   type="text"
                   value={selectedShapes[0].strokeColor}
                   onChange={(e) => selectedShapes.forEach(s => onUpdateShape(s.id, { strokeColor: e.target.value }))}
-                  className="flex-1 bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                  className="flex-1 bg-hover text-body text-sm px-2 py-1 rounded border border-card"
                 />
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           
           {allSameOpacity && (
             <div>
-              <label className="text-[#888] text-sm block mb-1">Opacity</label>
+              <label className="text-secondary text-sm block mb-1">Opacity</label>
               <div className="flex items-center gap-2">
                 <input
                   type="range"
@@ -174,7 +174,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                   onChange={(e) => selectedShapes.forEach(s => onUpdateShape(s.id, { opacity: Number(e.target.value) }))}
                   className="flex-1"
                 />
-                <span className="text-white text-sm w-10">{Math.round(selectedShapes[0].opacity * 100)}%</span>
+                <span className="text-body text-sm w-10">{Math.round(selectedShapes[0].opacity * 100)}%</span>
               </div>
             </div>
           )}
@@ -182,29 +182,29 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           <div className="flex gap-2 mt-4">
             <button
               onClick={onDeleteAll}
-              className="flex-1 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+              className="flex-1 py-2 bg-red-600 text-body text-sm rounded hover:bg-red-700 transition-colors"
             >
               Delete All
             </button>
             <button
               onClick={onDuplicateAll}
-              className="flex-1 py-2 bg-[#222] text-white text-sm rounded hover:bg-[#333] transition-colors"
+              className="flex-1 py-2 bg-hover text-body text-sm rounded hover:bg-hover transition-colors"
             >
               Duplicate
             </button>
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-2">Align</label>
+            <label className="text-secondary text-sm block mb-2">Align</label>
             <div className="flex gap-1">
-              <button onClick={() => onAlign('left')} className="flex-1 py-1.5 bg-[#222] text-[#888] text-xs rounded hover:text-white">Left</button>
-              <button onClick={() => onAlign('center')} className="flex-1 py-1.5 bg-[#222] text-[#888] text-xs rounded hover:text-white">Center</button>
-              <button onClick={() => onAlign('right')} className="flex-1 py-1.5 bg-[#222] text-[#888] text-xs rounded hover:text-white">Right</button>
+              <button onClick={() => onAlign('left')} className="flex-1 py-1.5 bg-hover text-secondary text-xs rounded hover:text-body">Left</button>
+              <button onClick={() => onAlign('center')} className="flex-1 py-1.5 bg-hover text-secondary text-xs rounded hover:text-body">Center</button>
+              <button onClick={() => onAlign('right')} className="flex-1 py-1.5 bg-hover text-secondary text-xs rounded hover:text-body">Right</button>
             </div>
             <div className="flex gap-1 mt-1">
-              <button onClick={() => onAlign('top')} className="flex-1 py-1.5 bg-[#222] text-[#888] text-xs rounded hover:text-white">Top</button>
-              <button onClick={() => onAlign('middle')} className="flex-1 py-1.5 bg-[#222] text-[#888] text-xs rounded hover:text-white">Middle</button>
-              <button onClick={() => onAlign('bottom')} className="flex-1 py-1.5 bg-[#222] text-[#888] text-xs rounded hover:text-white">Bottom</button>
+              <button onClick={() => onAlign('top')} className="flex-1 py-1.5 bg-hover text-secondary text-xs rounded hover:text-body">Top</button>
+              <button onClick={() => onAlign('middle')} className="flex-1 py-1.5 bg-hover text-secondary text-xs rounded hover:text-body">Middle</button>
+              <button onClick={() => onAlign('bottom')} className="flex-1 py-1.5 bg-hover text-secondary text-xs rounded hover:text-body">Bottom</button>
             </div>
           </div>
         </div>
@@ -214,17 +214,17 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
   
   if (selectedShape) {
     return (
-      <div className="w-60 bg-[#141414] border-l border-[#222] p-4 overflow-y-auto">
-        <h3 className="text-white font-medium mb-4">Shape Properties</h3>
+      <div className="w-60 bg-panel border-l border-panel p-4 overflow-y-auto">
+        <h3 className="text-body font-medium mb-4">Shape Properties</h3>
         
         <div className="space-y-4">
-          <div className="bg-[#1a1a2e] rounded-lg p-3 border border-[#6C47FF]">
+          <div className="bg-card rounded-lg p-3 border border-[#6C47FF]">
             <label className="text-[#6C47FF] text-xs font-semibold uppercase tracking-wide block mb-2">Label</label>
             <input
               type="text"
               value={selectedShape.label || ''}
               onChange={(e) => onUpdateShape(selectedShape.id, { label: e.target.value })}
-              className="w-full bg-[#222] text-white text-sm px-3 py-2 rounded border border-[#444] focus:border-[#6C47FF] focus:outline-none"
+              className="w-full bg-hover text-body text-sm px-3 py-2 rounded border border-card focus:border-[#6C47FF] focus:outline-none"
               placeholder="Enter label..."
               autoFocus
             />
@@ -232,45 +232,45 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[#888] text-xs block mb-1">X</label>
+              <label className="text-secondary text-xs block mb-1">X</label>
               <input
                 type="number"
                 value={Math.round(selectedShape.x)}
                 onChange={(e) => onUpdateShape(selectedShape.id, { x: Number(e.target.value) })}
-                className="w-full bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="w-full bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
             <div>
-              <label className="text-[#888] text-xs block mb-1">Y</label>
+              <label className="text-secondary text-xs block mb-1">Y</label>
               <input
                 type="number"
                 value={Math.round(selectedShape.y)}
                 onChange={(e) => onUpdateShape(selectedShape.id, { y: Number(e.target.value) })}
-                className="w-full bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="w-full bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
             <div>
-              <label className="text-[#888] text-xs block mb-1">Width</label>
+              <label className="text-secondary text-xs block mb-1">Width</label>
               <input
                 type="number"
                 value={Math.round(selectedShape.width)}
                 onChange={(e) => onUpdateShape(selectedShape.id, { width: Math.max(40, Number(e.target.value)) })}
-                className="w-full bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="w-full bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
             <div>
-              <label className="text-[#888] text-xs block mb-1">Height</label>
+              <label className="text-secondary text-xs block mb-1">Height</label>
               <input
                 type="number"
                 value={Math.round(selectedShape.height)}
                 onChange={(e) => onUpdateShape(selectedShape.id, { height: Math.max(40, Number(e.target.value)) })}
-                className="w-full bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="w-full bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Fill Color</label>
+            <label className="text-secondary text-sm block mb-1">Fill Color</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -282,7 +282,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                 type="text"
                 value={selectedShape.fillColor}
                 onChange={(e) => onUpdateShape(selectedShape.id, { fillColor: e.target.value })}
-                className="flex-1 bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="flex-1 bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
             <div className="flex gap-1 mt-2 flex-wrap">
@@ -290,7 +290,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                 <button
                   key={color}
                   onClick={() => onUpdateShape(selectedShape.id, { fillColor: color })}
-                  className="w-5 h-5 rounded border border-[#333] hover:scale-110 transition-transform"
+                  className="w-5 h-5 rounded border border-card hover:scale-110 transition-transform"
                   style={{ backgroundColor: color }}
                 />
               ))}
@@ -298,7 +298,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Opacity</label>
+            <label className="text-secondary text-sm block mb-1">Opacity</label>
             <div className="flex items-center gap-2">
               <input
                 type="range"
@@ -309,12 +309,12 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                 onChange={(e) => onUpdateShape(selectedShape.id, { opacity: Number(e.target.value) })}
                 className="flex-1"
               />
-              <span className="text-white text-sm w-10">{Math.round(selectedShape.opacity * 100)}%</span>
+              <span className="text-body text-sm w-10">{Math.round(selectedShape.opacity * 100)}%</span>
             </div>
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Stroke Color</label>
+            <label className="text-secondary text-sm block mb-1">Stroke Color</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -327,13 +327,13 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                 value={selectedShape.strokeColor === 'transparent' ? '' : selectedShape.strokeColor}
                 onChange={(e) => onUpdateShape(selectedShape.id, { strokeColor: e.target.value || 'transparent' })}
                 placeholder="transparent"
-                className="flex-1 bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="flex-1 bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Stroke Width</label>
+            <label className="text-secondary text-sm block mb-1">Stroke Width</label>
             <input
               type="range"
               min="0"
@@ -345,7 +345,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Text Color</label>
+            <label className="text-secondary text-sm block mb-1">Text Color</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -357,25 +357,25 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                 type="text"
                 value={selectedShape.textColor}
                 onChange={(e) => onUpdateShape(selectedShape.id, { textColor: e.target.value })}
-                className="flex-1 bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+                className="flex-1 bg-hover text-body text-sm px-2 py-1 rounded border border-card"
               />
             </div>
           </div>
           
           <div>
-            <label className="text-[#888] text-sm block mb-1">Font Size</label>
+            <label className="text-secondary text-sm block mb-1">Font Size</label>
             <input
               type="number"
               min="10"
               max="48"
               value={selectedShape.fontSize}
               onChange={(e) => onUpdateShape(selectedShape.id, { fontSize: Number(e.target.value) })}
-              className="w-full bg-[#222] text-white text-sm px-2 py-1 rounded border border-[#333]"
+              className="w-full bg-hover text-body text-sm px-2 py-1 rounded border border-card"
             />
           </div>
 
           <div>
-            <label className="text-[#888] text-sm block mb-1">Shape Style</label>
+            <label className="text-secondary text-sm block mb-1">Shape Style</label>
             <div className="flex gap-1">
               {[
                 { id: 'rect', label: 'Rect' },
@@ -389,7 +389,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                   className={`flex-1 py-1.5 text-xs rounded ${
                     selectedShape.shapeStyle === style.id
                       ? 'bg-[#6C47FF] text-white'
-                      : 'bg-[#222] text-[#888] hover:text-white'
+                      : 'bg-hover text-secondary hover:text-body'
                   }`}
                 >
                   {style.label}
@@ -399,7 +399,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           </div>
 
           <div>
-            <label className="text-[#888] text-sm block mb-1">Label Position</label>
+            <label className="text-secondary text-sm block mb-1">Label Position</label>
             <div className="flex gap-1">
               {[
                 { id: 'top', label: 'Top' },
@@ -413,7 +413,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
                   className={`flex-1 py-1.5 text-xs rounded ${
                     selectedShape.labelPosition === pos.id
                       ? 'bg-[#6C47FF] text-white'
-                      : 'bg-[#222] text-[#888] hover:text-white'
+                      : 'bg-hover text-secondary hover:text-body'
                   }`}
                 >
                   {pos.label}
@@ -426,7 +426,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
             <button
               onClick={() => onUpdateShape(selectedShape.id, { fontBold: !selectedShape.fontBold })}
               className={`flex-1 py-1.5 text-sm rounded ${
-                selectedShape.fontBold ? 'bg-[#6C47FF] text-white' : 'bg-[#222] text-[#888] hover:text-white'
+                selectedShape.fontBold ? 'bg-[#6C47FF] text-white' : 'bg-hover text-secondary hover:text-body'
               }`}
             >
               Bold
@@ -434,7 +434,7 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
             <button
               onClick={() => onUpdateShape(selectedShape.id, { fontItalic: !selectedShape.fontItalic })}
               className={`flex-1 py-1.5 text-sm rounded ${
-                selectedShape.fontItalic ? 'bg-[#6C47FF] text-white' : 'bg-[#222] text-[#888] hover:text-white'
+                selectedShape.fontItalic ? 'bg-[#6C47FF] text-white' : 'bg-hover text-secondary hover:text-body'
               }`}
             >
               Italic
@@ -444,13 +444,13 @@ export default function PropertiesPanel({ selectedShapes, selectedArrow, onUpdat
           <div className="flex gap-2 mt-4">
             <button
               onClick={() => onDuplicate(selectedShape)}
-              className="flex-1 py-2 bg-[#222] text-white text-sm rounded hover:bg-[#333] transition-colors"
+              className="flex-1 py-2 bg-hover text-body text-sm rounded hover:bg-hover transition-colors"
             >
               Duplicate
             </button>
             <button
               onClick={() => onDelete(selectedShape.id)}
-              className="flex-1 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+              className="flex-1 py-2 bg-red-600 text-body text-sm rounded hover:bg-red-700 transition-colors"
             >
               Delete
             </button>

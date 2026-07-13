@@ -30,7 +30,7 @@ export default function LoadingOverlay({ visible, messages }) {
             strokeDasharray="80 40"
           />
         </svg>
-        <div className="text-white text-lg font-medium">
+        <div className="text-body text-lg font-medium">
           {messages[messageIndex]}
         </div>
       </div>

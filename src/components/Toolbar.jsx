@@ -43,15 +43,15 @@ function ToolButton({ tool, isActive, onClick, disabled, children }) {
           isActive
             ? 'bg-[#6C47FF] text-white'
             : disabled
-              ? 'text-[#444] cursor-not-allowed'
-              : 'hover:bg-[#222] text-[#888] hover:text-white'
+              ? 'text-body cursor-not-allowed'
+              : 'hover:bg-hover text-secondary hover:text-body'
         }`}
       >
         {children}
       </button>
       {showTooltip && !disabled && (
-        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-[#222] text-white text-sm px-3 py-1.5 rounded-md whitespace-nowrap z-50">
-          {tool.label} <span className="text-[#888] ml-1">({tool.shortcut})</span>
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-hover text-body text-sm px-3 py-1.5 rounded-md whitespace-nowrap z-50">
+          {tool.label} <span className="text-secondary ml-1">({tool.shortcut})</span>
         </div>
       )}
     </div>
@@ -74,7 +74,7 @@ export default function Toolbar({
   }
   
   return (
-    <div className="w-14 bg-[#141414] border-r border-[#222] flex flex-col items-center py-3 gap-1">
+    <div className="w-14 bg-panel border-r border-panel flex flex-col items-center py-3 gap-1">
       {tools.map((t) => (
         <ToolButton
           key={t.id}
@@ -86,29 +86,29 @@ export default function Toolbar({
         </ToolButton>
       ))}
       
-      <div className="w-10 h-px bg-[#222] my-2" />
+      <div className="w-10 h-px bg-hover my-2" />
       
       <ToolButton tool={{ label: 'Snap to Grid', shortcut: '#' }} isActive={snapToGrid} onClick={onToggleSnap}>
         #
       </ToolButton>
       
       <ToolButton tool={{ label: 'Undo', shortcut: 'Ctrl+Z' }} isActive={false} onClick={onUndo} disabled={!canUndo}>
-        <span className={canUndo ? '' : 'text-[#444]'}>↩</span>
+        <span className={canUndo ? '' : 'text-body'}>↩</span>
       </ToolButton>
       <ToolButton tool={{ label: 'Redo', shortcut: 'Ctrl+Y' }} isActive={false} onClick={onRedo} disabled={!canRedo}>
-        <span className={canRedo ? '' : 'text-[#444]'}>↪</span>
+        <span className={canRedo ? '' : 'text-body'}>↪</span>
       </ToolButton>
       
-      <div className="w-10 h-px bg-[#222] my-2" />
+      <div className="w-10 h-px bg-hover my-2" />
       
       <ToolButton tool={{ label: 'Delete', shortcut: 'Del' }} isActive={selectedCount > 0} onClick={onDelete}>
-        <span className={selectedCount > 0 ? 'text-[#E05252]' : 'text-[#444]'}>🗑</span>
+        <span className={selectedCount > 0 ? 'text-[#E05252]' : 'text-body'}>🗑</span>
       </ToolButton>
       <ToolButton tool={{ label: 'Select All', shortcut: 'Ctrl+A' }} isActive={false} onClick={onSelectAll}>
         🔲
       </ToolButton>
 
-      <div className="w-10 h-px bg-[#222] my-2" />
+      <div className="w-10 h-px bg-hover my-2" />
 
       <ToolButton tool={{ label: 'Copy', shortcut: 'Ctrl+C' }} isActive={selectedCount > 0} onClick={onCopy}>
         ⧉
@@ -120,13 +120,13 @@ export default function Toolbar({
         ⊕
       </ToolButton>
 
-      <div className="w-10 h-px bg-[#222] my-2" />
+      <div className="w-10 h-px bg-hover my-2" />
 
       <button
         onClick={onAlignLeft}
         disabled={selectedCount < 2}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount >= 2 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Align Left"
       >
@@ -136,7 +136,7 @@ export default function Toolbar({
         onClick={onAlignCenter}
         disabled={selectedCount < 2}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount >= 2 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Align Center"
       >
@@ -146,20 +146,20 @@ export default function Toolbar({
         onClick={onAlignRight}
         disabled={selectedCount < 2}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount >= 2 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Align Right"
       >
         ⇥
       </button>
 
-      <div className="w-10 h-px bg-[#222] my-1" />
+      <div className="w-10 h-px bg-hover my-1" />
 
       <button
         onClick={onAlignTop}
         disabled={selectedCount < 2}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount >= 2 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Align Top"
       >
@@ -169,7 +169,7 @@ export default function Toolbar({
         onClick={onAlignMiddle}
         disabled={selectedCount < 2}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount >= 2 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Align Middle"
       >
@@ -179,20 +179,20 @@ export default function Toolbar({
         onClick={onAlignBottom}
         disabled={selectedCount < 2}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount >= 2 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount >= 2 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Align Bottom"
       >
         ⬎
       </button>
 
-      <div className="w-10 h-px bg-[#222] my-2" />
+      <div className="w-10 h-px bg-hover my-2" />
 
       <button
         onClick={onBringForward}
         disabled={selectedCount === 0}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount > 0 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount > 0 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Bring to Front"
       >
@@ -202,14 +202,14 @@ export default function Toolbar({
         onClick={onSendBackward}
         disabled={selectedCount === 0}
         className={`w-10 h-10 flex items-center justify-center text-sm rounded-lg transition-all disabled:opacity-30 ${
-          selectedCount > 0 ? 'hover:bg-[#222] text-[#888] hover:text-white' : 'text-[#444] cursor-not-allowed'
+          selectedCount > 0 ? 'hover:bg-hover text-secondary hover:text-body' : 'text-body cursor-not-allowed'
         }`}
         title="Send to Back"
       >
         ⇩
       </button>
 
-      <div className="w-10 h-px bg-[#222] my-2" />
+      <div className="w-10 h-px bg-hover my-2" />
 
       <ToolButton tool={{ label: 'Dark Mode', shortcut: '' }} isActive={darkMode} onClick={onToggleDarkMode}>
         {darkMode ? '🌙' : '☀'}
@@ -218,7 +218,7 @@ export default function Toolbar({
         ?
       </ToolButton>
 
-      <div className="w-10 h-px bg-[#222] my-2" />
+      <div className="w-10 h-px bg-hover my-2" />
 
       <div className="mt-auto flex flex-col items-center gap-2 py-3">
         {!user ? (
@@ -227,7 +227,7 @@ export default function Toolbar({
               console.log('Login button clicked, user:', user)
               onOpenAuth?.()
             }}
-            className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-white rounded-lg hover:bg-[#222]"
+            className="w-10 h-10 flex items-center justify-center text-lg text-secondary hover:text-body rounded-lg hover:bg-hover"
             title="Sign in"
           >
             👤
@@ -249,7 +249,7 @@ export default function Toolbar({
                 console.log('Settings clicked')
                 onOpenSettings?.()
               }}
-              className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-white rounded-lg hover:bg-[#222]"
+              className="w-10 h-10 flex items-center justify-center text-lg text-secondary hover:text-body rounded-lg hover:bg-hover"
               title="Settings"
             >
               ⚙
@@ -259,7 +259,7 @@ export default function Toolbar({
                 console.log('Sign out clicked')
                 signOut()
               }}
-              className="w-10 h-10 flex items-center justify-center text-lg text-[#888] hover:text-[#FC8181] rounded-lg hover:bg-[#222]"
+              className="w-10 h-10 flex items-center justify-center text-lg text-secondary hover:text-[#FC8181] rounded-lg hover:bg-hover"
               title="Sign out"
             >
               ⏻
