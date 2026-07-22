@@ -1,5 +1,7 @@
 import { generateId } from './uid';
 
+const STORAGE_KEY = 'mend-ai_diagram'
+
 export function saveDiagram(title, shapes, arrows) {
   const data = {
     version: '1.0',
@@ -21,62 +23,78 @@ export function saveDiagram(title, shapes, arrows) {
   URL.revokeObjectURL(url);
 }
 
+export function autoSaveToLocal(title, shapes, arrows) {
+  try {
+    const data = { version: '1.0', title, shapes, arrows }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch {}
+}
+
+export function loadFromLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return normalizeDiagram(JSON.parse(raw))
+  } catch {
+    return null
+  }
+}
+
+function normalizeDiagram(data) {
+  if (!data || !data.shapes || !data.arrows) return null
+
+  const shapes = data.shapes.map(shape => ({
+    id: shape.id || generateId('shape'),
+    type: shape.type || 'rect',
+    x: shape.x || 100,
+    y: shape.y || 100,
+    width: shape.width || 140,
+    height: shape.height || 70,
+    label: shape.label || '',
+    fillColor: shape.fillColor || '#6C47FF',
+    strokeColor: shape.strokeColor || '#FFFFFF',
+    strokeWidth: shape.strokeWidth || 1.5,
+    textColor: shape.textColor || '#FFFFFF',
+    fontSize: shape.fontSize || 16,
+    fontBold: shape.fontBold || false,
+    fontItalic: shape.fontItalic || false,
+    opacity: shape.opacity ?? 1,
+    isSelected: false,
+    aiGenerated: shape.aiGenerated || false
+  }))
+
+  const arrows = data.arrows.map(arrow => ({
+    id: arrow.id || generateId('arrow'),
+    fromShapeId: arrow.fromShapeId || '',
+    toShapeId: arrow.toShapeId || '',
+    label: arrow.label || '',
+    color: arrow.color || '#AAAAAA',
+    strokeWidth: arrow.strokeWidth || 1.5,
+    style: arrow.style || 'solid',
+    arrowHead: arrow.arrowHead || 'end',
+    isSelected: false,
+    aiGenerated: arrow.aiGenerated || false
+  }))
+
+  return { title: data.title || 'Untitled Diagram', shapes, arrows }
+}
+
 export function loadDiagram(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const reader = new FileReader()
     
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target.result);
-        
-        if (!data.shapes || !data.arrows) {
-          throw new Error('Invalid file format');
-        }
-        
-        const shapes = data.shapes.map(shape => ({
-          id: shape.id || generateId('shape'),
-          type: shape.type || 'rect',
-          x: shape.x || 100,
-          y: shape.y || 100,
-          width: shape.width || 140,
-          height: shape.height || 70,
-          label: shape.label || '',
-          fillColor: shape.fillColor || '#6C47FF',
-          strokeColor: shape.strokeColor || '#FFFFFF',
-          strokeWidth: shape.strokeWidth || 1.5,
-          textColor: shape.textColor || '#FFFFFF',
-          fontSize: shape.fontSize || 16,
-          fontBold: shape.fontBold || false,
-          fontItalic: shape.fontItalic || false,
-          opacity: shape.opacity ?? 1,
-          isSelected: false,
-          aiGenerated: shape.aiGenerated || false
-        }));
-        
-        const arrows = data.arrows.map(arrow => ({
-          id: arrow.id || generateId('arrow'),
-          fromShapeId: arrow.fromShapeId || '',
-          toShapeId: arrow.toShapeId || '',
-          label: arrow.label || '',
-          color: arrow.color || '#AAAAAA',
-          strokeWidth: arrow.strokeWidth || 1.5,
-          style: arrow.style || 'solid',
-          arrowHead: arrow.arrowHead || 'end',
-          isSelected: false,
-          aiGenerated: arrow.aiGenerated || false
-        }));
-        
-        resolve({
-          title: data.title || 'Untitled Diagram',
-          shapes,
-          arrows
-        });
-      } catch (err) {
-        reject(new Error('Invalid file format'));
+        const data = JSON.parse(e.target.result)
+        const result = normalizeDiagram(data)
+        if (!result) throw new Error('Invalid file format')
+        resolve(result)
+      } catch {
+        reject(new Error('Invalid file format'))
       }
-    };
+    }
     
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsText(file);
-  });
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsText(file)
+  })
 }

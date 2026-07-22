@@ -20,7 +20,7 @@ import { useCanvas } from './hooks/useCanvas';
 import { useAIRateLimit } from './hooks/useAIRateLimit';
 import { useExport } from './hooks/useExport';
 import { useMobile } from './hooks/useMobile';
-import { saveDiagram, loadDiagram } from './utils/saveLoad';
+import { saveDiagram, loadDiagram, autoSaveToLocal, loadFromLocal } from './utils/saveLoad';
 import { parseAIResponse, getAutoFitBounds } from './utils/aiShapeParser';
 import { generateDiagram, improveDiagram } from './services/aiService';
 
@@ -395,6 +395,22 @@ const svgRef = useRef(null);
     }
   }, [canMakeRequest, recordRequest, startCooldown, state.shapes, state.arrows, state.selectedIds, updateElements, addToast, pushHistory, setAiLoading]);
   
+  useEffect(() => {
+    if (!showHome && state.shapes.length > 0) {
+      const timer = setTimeout(() => autoSaveToLocal(state.title, state.shapes, state.arrows), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [state.title, state.shapes, state.arrows, showHome])
+
+  useEffect(() => {
+    const saved = loadFromLocal()
+    if (saved && saved.shapes.length > 0) {
+      loadDiagramState(saved)
+      setTitle(saved.title)
+      setShowHome(false)
+    }
+  }, [loadDiagramState, setTitle, setShowHome])
+
   const handleSave = useCallback(() => {
     saveDiagram(state.title, state.shapes, state.arrows);
     addToast('Diagram saved', 'success');
