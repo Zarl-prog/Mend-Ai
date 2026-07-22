@@ -111,7 +111,9 @@ export default function Arrow({ arrow, fromShape, toShape, onSelect, isSelected,
               textAnchor="middle"
               dominantBaseline="middle"
               fill="rgba(255, 255, 255, 0.85)"
-              fontSize={11}
+              fontSize={14}
+              fontFamily="Inter, sans-serif"
+              fontWeight={500}
             >
               {arrow.label}
             </text>
