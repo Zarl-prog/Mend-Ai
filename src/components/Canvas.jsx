@@ -40,6 +40,8 @@ const Canvas = forwardRef(function Canvas({
   const touchStartPos = useRef({ x: 0, y: 0 });
   const isTwoFingerGesture = useRef(false);
   const initialPinchDist = useRef(0);
+  const longPressTimer = useRef(null);
+  const longPressTriggered = useRef(false);
   
   React.useImperativeHandle(ref, () => canvasRef.current, []);
   
@@ -397,6 +399,7 @@ const Canvas = forwardRef(function Canvas({
     }
     
     isTwoFingerGesture.current = false;
+    longPressTriggered.current = false;
     const touch = e.touches[0];
     touchStartPos.current = { x: touch.clientX, y: touch.clientY };
     
@@ -414,6 +417,11 @@ const Canvas = forwardRef(function Canvas({
         onSelectShape(shapeEl.getAttribute('data-shape-id'));
       } else {
         onDeselectAll();
+        longPressTimer.current = setTimeout(() => {
+          longPressTriggered.current = true;
+          const shape = onCreateShape('rect', point.x, point.y);
+          onSelectShape(shape.id);
+        }, 500);
       }
     } else if (tool === 'arrow') {
       // Arrow tool requires clicking on shapes
@@ -452,6 +460,16 @@ const Canvas = forwardRef(function Canvas({
     
     if (isTwoFingerGesture.current) return;
     
+    if (e.touches.length === 1 && longPressTimer.current) {
+      const touch = e.touches[0];
+      const dx = touch.clientX - touchStartPos.current.x;
+      const dy = touch.clientY - touchStartPos.current.y;
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    }
+    
     if (e.touches.length === 1) {
       const touch = e.touches[0];
       
@@ -480,6 +498,13 @@ const Canvas = forwardRef(function Canvas({
       isTwoFingerGesture.current = false;
       return;
     }
+    
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    
+    if (longPressTriggered.current) return;
     
     if (e.touches.length === 0) {
       const now = Date.now();
