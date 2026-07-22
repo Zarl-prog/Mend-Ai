@@ -567,6 +567,10 @@ addToast('Template loaded!', 'success');
     setPan(newPan.x, newPan.y);
   }, [setZoom, setPan]);
   
+  const [dismissedOnboarding, setDismissedOnboarding] = useState(
+    () => localStorage.getItem('mend-ai_onboarding_dismissed') === 'true'
+  )
+
   const selectedShapes = state.shapes.filter(s => state.selectedIds.includes(s.id));
   const selectedArrow = state.arrows.find(a => a.isSelected);
 
@@ -682,6 +686,22 @@ addToast('Template loaded!', 'success');
           gridSize={state.gridSize}
           isMobile={isMobile}
         />
+        
+        {!dismissedOnboarding && state.shapes.length === 0 && state.arrows.length === 0 && (
+          <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+            <div className="bg-card border border-card rounded-xl px-6 py-4 shadow-xl max-w-sm text-center pointer-events-auto cursor-pointer" onClick={() => {
+              setDismissedOnboarding(true)
+              localStorage.setItem('mend-ai_onboarding_dismissed', 'true')
+            }}>
+              <p className="text-body font-medium text-sm mb-2">Welcome to Mend AI</p>
+              <p className="text-secondary text-xs leading-relaxed">
+                Pick a tool from the left sidebar to draw shapes,<br />
+                or press <kbd className="bg-hover px-1.5 py-0.5 rounded text-body text-xs font-mono">Ctrl+K</kbd> to generate with AI.
+              </p>
+              <p className="text-muted text-xs mt-2">Click anywhere to dismiss</p>
+            </div>
+          </div>
+        )}
         
         {!isMobile && (
           <PropertiesPanel
