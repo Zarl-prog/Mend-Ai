@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
 const shortcuts = [
@@ -32,44 +32,15 @@ const shortcuts = [
 
 export default function SettingsModal({ isOpen, onClose }) {
   const [tab, setTab] = useState('account')
-  const { user, profile, updateProfile, signOut, resetPassword } = useAuth()
-  const [displayName, setDisplayName] = useState('')
-  const [diagramCount, setDiagramCount] = useState(0)
-  const [toastMsg, setToastMsg] = useState('')
-  
-  useEffect(() => {
-    if (profile) {
-      setDisplayName(profile.display_name || '')
-    }
-  }, [profile])
+  const { profile, updateProfile } = useAuth()
   
   if (!isOpen) return null
-  
-  const handleSaveDisplayName = async () => {
-    if (displayName.trim() && displayName !== profile?.display_name) {
-      await updateProfile({ display_name: displayName.trim() })
-      setToastMsg('Display name saved')
-      setTimeout(() => setToastMsg(''), 2500)
-    }
-  }
-  
-  const handleChangePassword = async () => {
-    if (user?.email) {
-      await resetPassword(user.email)
-      setToastMsg('Password reset email sent!')
-      setTimeout(() => setToastMsg(''), 2500)
-    }
-  }
   
   const gridSizes = { small: 16, medium: 24, large: 40 }
   
   const handleSettingChange = async (key, value) => {
     await updateProfile({ [key]: value })
   }
-  
-  const memberSince = user?.created_at 
-    ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    : 'N/A'
   
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[1000]" onClick={onClose}>
@@ -108,80 +79,11 @@ export default function SettingsModal({ isOpen, onClose }) {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#6C47FF] flex items-center justify-center text-body text-xl font-semibold">
-                  {(profile?.display_name || user?.email?.[0] || 'U').toUpperCase()[0]}
+                  {(profile?.display_name || 'U').toUpperCase()[0]}
                 </div>
                 <div>
                   <div className="text-body font-semibold text-lg">{profile?.display_name || 'User'}</div>
-                  <div className="text-muted text-sm">{user?.email}</div>
-                  <span className="text-xs bg-hover text-secondary px-2 py-0.5 rounded">Free</span>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-secondary text-sm mb-2">Display Name</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className="flex-1 bg-input border border-card rounded-lg px-4 py-2 text-body text-sm focus:border-[#6C47FF] focus:outline-none"
-                  />
-                  <button
-                    onClick={handleSaveDisplayName}
-                    className="px-4 py-2 bg-[#6C47FF] text-white rounded-lg text-sm hover:brightness-110"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-secondary text-sm mb-2">Email</label>
-                <input
-                  type="email"
-                  value={user?.email || ''}
-                  disabled
-                  className="w-full bg-input border border-card rounded-lg px-4 py-2 text-muted text-sm cursor-not-allowed"
-                />
-                <p className="text-muted text-xs mt-1">Contact support to change email</p>
-              </div>
-              
-              <div>
-                <button
-                  onClick={handleChangePassword}
-                  className="px-4 py-2 border border-card text-body rounded-lg text-sm hover:bg-input"
-                >
-                  Change Password
-                </button>
-              </div>
-              
-              <div>
-                <h3 className="text-secondary text-sm mb-2">Your Usage</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-input rounded-lg p-3">
-                    <div className="text-2xl font-semibold text-body">{diagramCount}</div>
-                    <div className="text-muted text-xs">Diagrams saved</div>
-                  </div>
-                  <div className="bg-input rounded-lg p-3">
-                    <div className="text-body text-sm">{memberSince}</div>
-                    <div className="text-muted text-xs">Member since</div>
-                  </div>
-                  <div className="bg-input rounded-lg p-3">
-                    <div className="text-body text-sm">Free</div>
-                    <div className="text-muted text-xs">Account type</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t border-card">
-                <h3 className="text-red-400 text-sm mb-2">Danger Zone</h3>
-                <div className="border border-red-900/50 rounded-lg p-4">
-                  <button className="text-red-400 text-sm hover:underline">
-                    Delete Account
-                  </button>
-                  <p className="text-muted text-xs mt-1">
-                    This will permanently delete your account and all diagrams.
-                  </p>
+                  <div className="text-muted text-sm">Guest account — data stored locally</div>
                 </div>
               </div>
             </div>
